@@ -38,45 +38,57 @@ const appId = "ascend-prod";
 // --- DEFINIÇÕES DE TEMA ---
 const THEMES = {
     dark: {
-        label: 'Ascend Padrão', bg: 'bg-black', text: 'text-white', primary: 'bg-orange-600', primaryText: 'text-orange-500',
-        cardBg: 'bg-gray-800', border: 'border-gray-700', inputBg: 'bg-gray-900', placeholder: 'text-gray-600',
+        label: 'Ascend Padrão', bg: 'bg-black', text: 'text-white', muted: 'text-gray-400',
+        primary: 'bg-orange-600', primaryText: 'text-orange-500',
+        cardBg: 'bg-gray-800', border: 'border-gray-700',
+        inputBg: 'bg-gray-900', placeholder: 'text-gray-600',
         headerBg: 'bg-gray-900', sidebarBg: 'bg-gray-900', sidebarBorder: 'border-gray-800',
         danger: 'text-red-400', success: 'text-emerald-400', animationColor: 'shadow-orange-900/20',
         iconBg: 'bg-gray-900',
     },
     light: {
-        label: 'Claro', bg: 'bg-gray-100', text: 'text-gray-900', primary: 'bg-orange-600', primaryText: 'text-orange-600',
-        cardBg: 'bg-white', border: 'border-gray-200', inputBg: 'bg-white', placeholder: 'text-gray-400',
+        label: 'Claro', bg: 'bg-gray-50', text: 'text-gray-900', muted: 'text-gray-500',
+        primary: 'bg-orange-600', primaryText: 'text-orange-600',
+        cardBg: 'bg-white', border: 'border-gray-200',
+        inputBg: 'bg-gray-50', placeholder: 'text-gray-400',
         headerBg: 'bg-white', sidebarBg: 'bg-white', sidebarBorder: 'border-gray-200',
-        danger: 'text-red-600', success: 'text-emerald-600', animationColor: 'shadow-orange-300/50',
+        danger: 'text-red-600', success: 'text-emerald-600', animationColor: 'shadow-orange-300/30',
         iconBg: 'bg-gray-100',
     },
     blue: {
-        label: 'Azul Corporativo', bg: 'bg-gray-900', text: 'text-white', primary: 'bg-blue-600', primaryText: 'text-blue-400',
-        cardBg: 'bg-gray-800', border: 'border-gray-700', inputBg: 'bg-gray-900', placeholder: 'text-gray-600',
-        headerBg: 'bg-gray-900', sidebarBg: 'bg-gray-900', sidebarBorder: 'border-gray-700',
+        label: 'Azul Corporativo', bg: 'bg-slate-900', text: 'text-white', muted: 'text-slate-400',
+        primary: 'bg-blue-600', primaryText: 'text-blue-400',
+        cardBg: 'bg-slate-800', border: 'border-slate-700',
+        inputBg: 'bg-slate-900', placeholder: 'text-slate-500',
+        headerBg: 'bg-slate-900', sidebarBg: 'bg-slate-900', sidebarBorder: 'border-slate-700',
         danger: 'text-red-400', success: 'text-cyan-400', animationColor: 'shadow-blue-900/20',
         iconBg: 'bg-slate-950',
     },
     matrix: {
-        label: 'Tech Matrix', bg: 'bg-black', text: 'text-green-400', primary: 'bg-green-600', primaryText: 'text-green-400',
-        cardBg: 'bg-gray-900', border: 'border-green-900', inputBg: 'bg-black', placeholder: 'text-green-900',
+        label: 'Tech Matrix', bg: 'bg-black', text: 'text-green-400', muted: 'text-green-800',
+        primary: 'bg-green-600', primaryText: 'text-green-400',
+        cardBg: 'bg-gray-900', border: 'border-green-900',
+        inputBg: 'bg-black', placeholder: 'text-green-900',
         headerBg: 'bg-black', sidebarBg: 'bg-black', sidebarBorder: 'border-green-900',
-        danger: 'text-red-500', success: 'text-cyan-400', animationColor: 'shadow-green-500/10',
+        danger: 'text-red-500', success: 'text-green-400', animationColor: 'shadow-green-500/10',
         iconBg: 'bg-gray-900',
     },
     corp: {
-        label: 'Corporate Gray', bg: 'bg-gray-200', text: 'text-gray-900', primary: 'bg-blue-800', primaryText: 'text-blue-800',
-        cardBg: 'bg-white', border: 'border-slate-300', inputBg: 'bg-gray-100', placeholder: 'text-slate-500',
-        headerBg: 'bg-white', sidebarBg: 'bg-white', sidebarBorder: 'border-slate-300',
+        label: 'Corporate Gray', bg: 'bg-gray-100', text: 'text-slate-800', muted: 'text-slate-500',
+        primary: 'bg-slate-700', primaryText: 'text-slate-700',
+        cardBg: 'bg-white', border: 'border-slate-200',
+        inputBg: 'bg-slate-50', placeholder: 'text-slate-400',
+        headerBg: 'bg-white', sidebarBg: 'bg-white', sidebarBorder: 'border-slate-200',
         danger: 'text-red-700', success: 'text-green-700', animationColor: 'shadow-slate-900/10',
         iconBg: 'bg-slate-100',
     },
     sunset: {
-        label: 'Sunset Gold', bg: 'bg-slate-900', text: 'text-amber-100', primary: 'bg-yellow-500', primaryText: 'text-yellow-500',
-        cardBg: 'bg-purple-900/30', border: 'border-yellow-600/30', inputBg: 'bg-purple-900/50', placeholder: 'text-purple-300',
-        headerBg: 'bg-purple-900', sidebarBg: 'bg-purple-900', sidebarBorder: 'border-yellow-600/30',
-        danger: 'text-red-400', success: 'text-orange-400', animationColor: 'shadow-yellow-500/10',
+        label: 'Sunset Gold', bg: 'bg-purple-950', text: 'text-amber-100', muted: 'text-purple-300',
+        primary: 'bg-pink-600', primaryText: 'text-pink-400',
+        cardBg: 'bg-purple-900/40', border: 'border-pink-500/30',
+        inputBg: 'bg-purple-900/60', placeholder: 'text-purple-400',
+        headerBg: 'bg-purple-900', sidebarBg: 'bg-purple-900', sidebarBorder: 'border-pink-500/20',
+        danger: 'text-red-300', success: 'text-amber-300', animationColor: 'shadow-pink-500/20',
         iconBg: 'bg-purple-950',
     }
 };
@@ -111,7 +123,7 @@ const Button = ({ children, onClick, className = "", variant, disabled, type = "
             type={type}
             onClick={onClick}
             disabled={disabled}
-            className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${variant === 'ghost' ? `hover:${currentTheme.inputBg} ${currentTheme.placeholder} hover:${currentTheme.text}` :
+            className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${variant === 'ghost' ? `hover:${currentTheme.inputBg} ${currentTheme.muted} hover:${currentTheme.text}` :
                     variant === 'destructive' ? 'bg-red-600 text-white hover:bg-red-700' :
                         variant === 'outline' ? `border ${currentTheme.border} ${currentTheme.text} hover:${currentTheme.inputBg} hover:${currentTheme.text}` :
                             `${currentTheme.primary} text-white hover:opacity-90 shadow-lg ${currentTheme.animationColor}`
@@ -219,7 +231,7 @@ const ClientSearchInput = ({ clients, selectedId, onSelect, theme }) => {
                     <button
                         type="button"
                         onClick={handleClear}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 ${currentTheme.text} opacity-50 hover:opacity-100 hover:text-red-400`}
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 ${currentTheme.muted} hover:text-red-400`}
                     >
                         <X size={16} />
                     </button>
@@ -239,7 +251,7 @@ const ClientSearchInput = ({ clients, selectedId, onSelect, theme }) => {
                                 >
                                     <div>
                                         <div className={`font-medium ${currentTheme.text}`}>{client.nome_projeto}</div>
-                                        <div className={`text-xs opacity-50 ${currentTheme.text}`}>ID: {client.id.slice(0, 6)}...</div>
+                                        <div className={`text-xs ${currentTheme.muted}`}>ID: {client.id.slice(0, 6)}...</div>
                                     </div>
                                     <Badge variant={client.tipo === 'dominio' ? 'blue' : 'orange'} className="text-[10px]">
                                         {client.tipo === 'dominio' ? 'Domínio' : 'Tráfego'}
@@ -247,7 +259,7 @@ const ClientSearchInput = ({ clients, selectedId, onSelect, theme }) => {
                                 </div>
                             ))
                         ) : (
-                            <div className={`p-3 text-sm opacity-50 ${currentTheme.text} text-center`}>
+                            <div className={`p-3 text-sm ${currentTheme.muted} text-center`}>
                                 {search ? "Nenhum cliente encontrado." : "Digite para buscar..."}
                             </div>
                         )}
@@ -272,7 +284,7 @@ const Dialog = ({ open, onClose, children, theme }) => {
                         className={`${currentTheme.cardBg} border ${currentTheme.border} rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 relative max-h-[90vh] overflow-y-auto ${currentTheme.text}`}
                         onClick={e => e.stopPropagation()}
                     >
-                        <button onClick={onClose} className={`absolute top-4 right-4 opacity-50 hover:opacity-100 transition-colors`}><X size={20} /></button>
+                        <button onClick={onClose} className={`absolute top-4 right-4 ${currentTheme.muted} hover:${currentTheme.text} transition-colors`}><X size={20} /></button>
                         {children}
                     </motion.div>
                 </div>
@@ -363,7 +375,7 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                     {navItems.map((item) => (
-                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${activeTab === item.id ? `${currentTheme.primary.replace('bg-', 'bg-opacity-10 bg-')} ${currentTheme.primaryText} border ${currentTheme.border}` : `text-gray-400 hover:${currentTheme.inputBg} hover:${currentTheme.text}`}`}>
+                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${activeTab === item.id ? `${currentTheme.primary.replace('bg-', 'bg-opacity-10 bg-')} ${currentTheme.primaryText} border ${currentTheme.border}` : `${currentTheme.muted} hover:${currentTheme.inputBg} hover:${currentTheme.text}`}`}>
                             <item.icon className="w-5 h-5" /> {item.label}
                         </button>
                     ))}
@@ -371,8 +383,8 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
                 <div className={`p-4 border-t ${currentTheme.sidebarBorder}`}>
                     <div className="flex items-center gap-3 mb-3 px-2">
                         <div className={`w-10 h-10 rounded-full ${currentTheme.cardBg} border ${currentTheme.border} flex items-center justify-center ${currentTheme.primaryText} font-bold uppercase shadow-sm`}>{user?.email?.[0] || 'U'}</div>
-                        <div className="flex-1 min-w-0 overflow-hidden"><p className={`text-sm font-medium truncate ${currentTheme.text}`}>{user?.email}</p><p className="text-xs opacity-70 capitalize">{userData?.role || 'Gestor'}</p></div>
-                        <Button variant="ghost" size="icon" onClick={onLogout} className="text-gray-400 hover:text-red-400"><LogOut className="w-5 h-5" /></Button>
+                        <div className="flex-1 min-w-0 overflow-hidden"><p className={`text-sm font-medium truncate ${currentTheme.text}`}>{user?.email}</p><p className={`text-xs ${currentTheme.muted} capitalize`}>{userData?.role || 'Gestor'}</p></div>
+                        <Button variant="ghost" size="icon" onClick={onLogout} className={`${currentTheme.muted} hover:${currentTheme.danger}`}><LogOut className="w-5 h-5" /></Button>
                     </div>
                 </div>
             </aside>
@@ -380,13 +392,13 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
             {/* Mobile Header */}
             <div className={`md:hidden ${currentTheme.sidebarBg} border-b ${currentTheme.sidebarBorder} p-4 flex justify-between items-center sticky top-0 z-20`}>
                 <div className="flex items-center gap-2"><Flame className={`w-6 h-6 ${currentTheme.primaryText}`} /><span className={`font-bold text-lg ${currentTheme.text}`}>Ascend</span></div>
-                <Button variant="ghost" onClick={onLogout} className="text-gray-400 hover:text-white"><LogOut className="w-5 h-5" /></Button>
+                <Button variant="ghost" onClick={onLogout} className={`${currentTheme.muted} hover:${currentTheme.text}`}><LogOut className="w-5 h-5" /></Button>
             </div>
 
             {/* Mobile Nav */}
             <div className={`md:hidden fixed bottom-0 left-0 right-0 ${currentTheme.sidebarBg} border-t ${currentTheme.sidebarBorder} flex justify-around p-2 z-50`}>
                 {navItems.slice(0, 4).map((item) => (
-                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`p-2 rounded-lg flex flex-col items-center ${activeTab === item.id ? currentTheme.primaryText : 'text-gray-400'}`}>
+                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`p-2 rounded-lg flex flex-col items-center ${activeTab === item.id ? currentTheme.primaryText : currentTheme.muted}`}>
                         <item.icon className="w-6 h-6" /> <span className="text-[10px] mt-1">{item.label}</span>
                     </button>
                 ))}
@@ -398,17 +410,17 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
                 <div className="flex justify-end mb-8">
                     <div className="relative">
                         <button onClick={() => setShowNotifications(!showNotifications)} className={`p-2 ${currentTheme.cardBg} rounded-full shadow-sm border ${currentTheme.border} hover:${currentTheme.inputBg} relative transition-colors`}>
-                            <Bell className={`w-5 h-5 ${currentTheme.text} opacity-70`} />
+                            <Bell className={`w-5 h-5 ${currentTheme.placeholder}`} />
                             {notifications.length > 0 && (
                                 <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-800 animate-pulse"></span>
                             )}
                         </button>
                         {showNotifications && (
                             <div className={`absolute right-0 mt-2 w-80 ${currentTheme.cardBg} rounded-xl shadow-2xl border ${currentTheme.border} z-50 overflow-hidden`}>
-                                <div className={`p-3 border-b ${currentTheme.border} ${currentTheme.headerBg} font-medium text-sm ${currentTheme.text}`}>Notificações</div>
+                                <div className={`p-3 border-b ${currentTheme.border} ${currentTheme.headerBg} font-medium text-sm ${currentTheme.text.replace('text-white', 'text-gray-300')}`}>Notificações</div>
                                 <div className="max-h-64 overflow-y-auto">
                                     {notifications.length === 0 ? (
-                                        <div className={`p-4 text-center opacity-70 text-sm ${currentTheme.text}`}>Sem notificações novas.</div>
+                                        <div className={`p-4 text-center ${currentTheme.muted} text-sm`}>Sem notificações novas.</div>
                                     ) : (
                                         notifications.map((note, idx) => (
                                             <div key={idx} className={`p-3 border-b ${currentTheme.border} hover:${currentTheme.inputBg} last:border-0 transition-colors`}>
@@ -418,7 +430,7 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
                                                     </div>
                                                     <div>
                                                         <p className={`text-sm font-medium ${currentTheme.text}`}>{note.title}</p>
-                                                        <p className={`text-xs opacity-70 mt-0.5 ${currentTheme.text}`}>{note.message}</p>
+                                                        <p className={`text-xs ${currentTheme.muted} mt-0.5`}>{note.message}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -446,7 +458,7 @@ const StatsCard = ({ title, value, icon: IconComponent, color, trend, theme }) =
                 <div className={`absolute top-0 right-0 w-32 h-32 ${color.replace('text-', 'bg-')} opacity-5 rounded-full blur-2xl -mr-8 -mt-8 group-hover:opacity-10 transition-opacity`} />
                 <div className="flex justify-between items-start relative z-10">
                     <div>
-                        <p className={`text-xs font-bold opacity-70 uppercase tracking-widest ${currentTheme.text}`}>{title}</p>
+                        <p className={`text-xs font-bold ${currentTheme.muted} uppercase tracking-widest`}>{title}</p>
                         <p className={`text-3xl font-bold ${currentTheme.text} mt-2`}>{value}</p>
                         {trend && <div className={`flex items-center gap-1 text-sm font-medium mt-2 ${trend.positive ? currentTheme.success : currentTheme.danger}`}><span>{trend.positive ? '↑' : '↓'}</span> {trend.text}</div>}
                     </div>
@@ -467,7 +479,7 @@ const BalanceCard = ({ summary, theme }) => {
 
             <div className="flex-1 p-6 flex flex-col justify-center items-center gap-6 relative z-10">
                 <div className="text-center">
-                    <p className={`text-sm opacity-70 uppercase tracking-wide mb-2 ${currentTheme.text}`}>Saldo Atual</p>
+                    <p className={`text-sm ${currentTheme.muted} uppercase tracking-wide mb-2`}>Saldo Atual</p>
                     <p className={`text-5xl font-bold ${summary.saldo >= 0 ? currentTheme.primaryText : currentTheme.danger}`}>
                         {formatCurrency(summary.saldo)}
                     </p>
@@ -478,7 +490,7 @@ const BalanceCard = ({ summary, theme }) => {
                         <div className={`h-full ${currentTheme.primary}`} style={{ width: '70%' }} />
                         <div className={`absolute top-0 h-full w-1 ${currentTheme.cardBg}`} style={{ left: '70%' }} />
                     </div>
-                    <div className={`flex justify-between w-full text-xs opacity-70 font-medium uppercase tracking-wider ${currentTheme.text}`}>
+                    <div className={`flex justify-between w-full text-xs ${currentTheme.muted} font-medium uppercase tracking-wider`}>
                         <span>Entradas</span>
                         <span>Saídas</span>
                     </div>
@@ -492,7 +504,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, onToggleStatus, theme
     const currentTheme = theme || THEMES.dark;
     const displayList = limit ? transactions.slice(0, limit) : transactions;
 
-    if (displayList.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><DollarSign className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.text}>Nenhuma transação encontrada.</p></div>;
+    if (displayList.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><DollarSign className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.muted}>Nenhuma transação encontrada.</p></div>;
 
     return (
         <div className="space-y-3">
@@ -505,7 +517,7 @@ const TransactionList = ({ transactions, onEdit, onDelete, onToggleStatus, theme
                                 <div className={`p-3 rounded-lg ${currentTheme.iconBg} border ${currentTheme.border}`}>{t.type === 'receita' ? <TrendingUp size={20} className={currentTheme.success} /> : <TrendingDown size={20} className={currentTheme.danger} />}</div>
                                 <div>
                                     <p className={`font-bold ${currentTheme.text}`}>{t.description}</p>
-                                    <div className={`flex flex-wrap items-center gap-2 text-xs opacity-70 mt-1 ${currentTheme.text}`}>
+                                    <div className={`flex flex-wrap items-center gap-2 text-xs ${currentTheme.muted} mt-1`}>
                                         <span>{format(safeDate(t.date), "dd/MM/yyyy", { locale: ptBR })}</span>
                                         {t.clientName && <span className={`px-2 py-0.5 ${currentTheme.inputBg} ${currentTheme.primaryText} rounded flex items-center gap-1 border ${currentTheme.border}`}><User size={10} /> {t.clientName}</span>}
                                         <Badge variant={t.status === 'pago' || t.status === 'recebido' ? 'success' : t.isOverdue ? 'danger' : 'warning'} className="capitalize">{t.isOverdue && t.status !== 'cancelado' ? 'Atrasado' : t.status}</Badge>
@@ -545,17 +557,14 @@ const TransactionList = ({ transactions, onEdit, onDelete, onToggleStatus, theme
     );
 };
 
-// ... (Resto do código: ClientTable, TaskTable, TeamView, GenericForm, Views e App mantidos iguais)
-// Vou reaplicar o resto do código para garantir que está completo, mantendo as alterações feitas.
-
-const ClientTable = ({ clients, onEdit, onDelete, theme }) => {
+const ClientTable = ({ clients, onEdit, onDelete, theme, onUpdate }) => {
     const [visibleColumns, setVisibleColumns] = useState({ projeto: true, gestor: true, nicho: true, prioridade: true, metaAds: true, googleAds: true, status: true, acoes: true });
     const [showColumnSelector, setShowColumnSelector] = useState(false);
     const currentTheme = theme || THEMES.dark;
 
     const toggleColumn = (col) => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
 
-    if (clients.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><Users className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.text}>Nenhum cliente registado.</p></div>;
+    if (clients.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><Users className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.muted}>Nenhum cliente registado.</p></div>;
     return (
         <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
             <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg}`}>
@@ -566,7 +575,7 @@ const ClientTable = ({ clients, onEdit, onDelete, theme }) => {
                         <>
                             <div className="fixed inset-0 z-10" onClick={() => setShowColumnSelector(false)} />
                             <div className={`absolute right-0 mt-2 w-48 ${currentTheme.cardBg} rounded-lg shadow-xl border ${currentTheme.border} z-20 p-2`}>
-                                {Object.keys(visibleColumns).map(col => (<label key={col} className={`flex items-center px-2 py-1.5 hover:${currentTheme.inputBg} rounded cursor-pointer text-sm ${currentTheme.text} opacity-80`}><input type="checkbox" checked={visibleColumns[col]} onChange={() => toggleColumn(col)} className={`mr-2 rounded ${currentTheme.inputBg} ${currentTheme.border} ${currentTheme.primaryText} focus:ring-1`} /><span className="capitalize">{col.replace(/([A-Z])/g, ' $1')}</span></label>))}
+                                {Object.keys(visibleColumns).map(col => (<label key={col} className={`flex items-center px-2 py-1.5 hover:${currentTheme.inputBg} rounded cursor-pointer text-sm ${currentTheme.muted}`}><input type="checkbox" checked={visibleColumns[col]} onChange={() => toggleColumn(col)} className={`mr-2 rounded ${currentTheme.inputBg} ${currentTheme.border} ${currentTheme.primaryText} focus:ring-1`} /><span className="capitalize">{col.replace(/([A-Z])/g, ' $1')}</span></label>))}
                             </div>
                         </>
                     )}
@@ -574,7 +583,7 @@ const ClientTable = ({ clients, onEdit, onDelete, theme }) => {
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className={`${currentTheme.headerBg} opacity-70 uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border} ${currentTheme.text}`}>
+                    <thead className={`${currentTheme.headerBg} ${currentTheme.muted} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
                         <tr>
                             {visibleColumns.projeto && <th className="px-6 py-4">Projeto / Cliente</th>}
                             {visibleColumns.gestor && <th className="px-6 py-4">Gestor</th>}
@@ -589,13 +598,51 @@ const ClientTable = ({ clients, onEdit, onDelete, theme }) => {
                     <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text}`}>
                         {clients.map((client) => (
                             <tr key={client.id} className={`hover:${currentTheme.inputBg} transition-colors`}>
-                                {visibleColumns.projeto && <td className={`px-6 py-4 font-medium ${currentTheme.text}`}><div className="flex flex-col"><span className="text-base font-bold">{client.nome_projeto}</span><span className={`text-xs opacity-50 font-mono`}>ID: {client.id.slice(0, 8)}</span></div></td>}
-                                {visibleColumns.gestor && <td className={`px-6 py-4 opacity-70`}>{client.gestor || '-'}</td>}
+                                {visibleColumns.projeto && <td className={`px-6 py-4 font-medium ${currentTheme.text}`}><div className="flex flex-col"><span className="text-base font-bold">{client.nome_projeto}</span><span className={`text-xs ${currentTheme.muted} font-mono`}>ID: {client.id.slice(0, 8)}</span></div></td>}
+                                {visibleColumns.gestor && <td className={`px-6 py-4 ${currentTheme.muted}`}>{client.gestor || '-'}</td>}
                                 {visibleColumns.nicho && <td className="px-6 py-4"><div className="flex items-center gap-2">{client.tipo === 'dominio' ? <Globe size={16} className={currentTheme.success} /> : <TrendingUp size={16} className={currentTheme.primaryText} />}<span>{client.nicho || (client.tipo === 'dominio' ? 'Hospedagem' : 'Tráfego')}</span></div></td>}
-                                {visibleColumns.prioridade && <td className="px-6 py-4 text-center"><Badge variant={client.prioridade === 'alta' ? 'danger' : client.prioridade === 'media' ? 'warning' : 'blue'}>{client.prioridade}</Badge></td>}
-                                {visibleColumns.metaAds && <td className="px-6 py-4 text-center">{client.link_meta_ads ? <a href={client.link_meta_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className="opacity-50">-</span>}<div className={`text-xs opacity-50 mt-1`}>{formatCurrency(client.orcamento_facebook)}</div></td>}
-                                {visibleColumns.googleAds && <td className="px-6 py-4 text-center">{client.link_google_ads ? <a href={client.link_google_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className="opacity-50">-</span>}<div className={`text-xs opacity-50 mt-1`}>{formatCurrency(client.orcamento_google)}</div></td>}
-                                {visibleColumns.status && <td className="px-6 py-4 text-center"><Badge variant={client.status === 'ativo' ? 'success' : 'gray'}>{client.status}</Badge></td>}
+
+                                {/* EDITABLE PRIORITY */}
+                                {visibleColumns.prioridade && <td className="px-6 py-4 text-center">
+                                    {onUpdate ? (
+                                        <select
+                                            value={client.prioridade}
+                                            onChange={(e) => onUpdate(client.id, 'prioridade', e.target.value)}
+                                            className={`appearance-none px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer outline-none border-none text-center ${currentTheme.inputBg} ${currentTheme.text}
+                            ${client.prioridade === 'alta' ? 'text-red-500' : client.prioridade === 'media' ? 'text-amber-500' : 'text-blue-500'}
+                          `}
+                                        >
+                                            <option value="alta">Alta</option>
+                                            <option value="media">Média</option>
+                                            <option value="baixa">Baixa</option>
+                                        </select>
+                                    ) : (
+                                        <Badge variant={client.prioridade === 'alta' ? 'danger' : client.prioridade === 'media' ? 'warning' : 'blue'}>{client.prioridade}</Badge>
+                                    )}
+                                </td>}
+
+                                {visibleColumns.metaAds && <td className="px-6 py-4 text-center">{client.link_meta_ads ? <a href={client.link_meta_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className={currentTheme.muted}>-</span>}<div className={`text-xs ${currentTheme.muted} mt-1`}>{formatCurrency(client.orcamento_facebook)}</div></td>}
+                                {visibleColumns.googleAds && <td className="px-6 py-4 text-center">{client.link_google_ads ? <a href={client.link_google_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className={currentTheme.muted}>-</span>}<div className={`text-xs ${currentTheme.muted} mt-1`}>{formatCurrency(client.orcamento_google)}</div></td>}
+
+                                {/* EDITABLE STATUS */}
+                                {visibleColumns.status && <td className="px-6 py-4 text-center">
+                                    {onUpdate ? (
+                                        <select
+                                            value={client.status}
+                                            onChange={(e) => onUpdate(client.id, 'status', e.target.value)}
+                                            className={`appearance-none px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer outline-none border-none text-center ${currentTheme.inputBg} ${currentTheme.text}
+                            ${client.status === 'ativo' ? 'text-emerald-500' : 'text-gray-400'}
+                          `}
+                                        >
+                                            <option value="ativo">Ativo</option>
+                                            <option value="inativo">Inativo</option>
+                                            <option value="aguardando">Aguardando</option>
+                                        </select>
+                                    ) : (
+                                        <Badge variant={client.status === 'ativo' ? 'success' : 'gray'}>{client.status}</Badge>
+                                    )}
+                                </td>}
+
                                 {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(client)} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.primaryText} rounded transition-colors`}><Pencil size={16} /></button><button onClick={() => onDelete(client.id, 'clients')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded transition-colors`}><Trash2 size={16} /></button></div></td>}
                             </tr>
                         ))}
@@ -623,7 +670,7 @@ const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
         { key: 'acoes', label: 'Ações' }
     ];
 
-    if (tasks.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><CheckSquare className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.text}>Nenhuma tarefa pendente.</p></div>;
+    if (tasks.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><CheckSquare className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.muted}>Nenhuma tarefa pendente.</p></div>;
 
     return (
         <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
@@ -635,7 +682,7 @@ const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
                         <>
                             <div className="fixed inset-0 z-10" onClick={() => setShowColumnSelector(false)} />
                             <div className={`absolute right-0 mt-2 w-48 ${currentTheme.cardBg} rounded-lg shadow-xl border ${currentTheme.border} z-20 p-2`}>
-                                <div className={`text-xs font-semibold ${currentTheme.text} opacity-70 mb-2 px-2`}>Selecionar Colunas</div>
+                                <div className={`text-xs font-semibold ${currentTheme.muted} mb-2 px-2`}>Selecionar Colunas</div>
                                 {columnOptions.map(col => (
                                     <label key={col.key} className={`flex items-center px-2 py-1.5 hover:${currentTheme.inputBg} rounded cursor-pointer text-sm ${currentTheme.text}`}>
                                         <input type="checkbox" checked={visibleColumns[col.key]} onChange={() => toggleColumn(col.key)} className={`mr-2 rounded ${currentTheme.inputBg} ${currentTheme.border} ${currentTheme.primaryText}`} />
@@ -649,7 +696,7 @@ const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className={`bg-gray-900 ${currentTheme.placeholder} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border} ${currentTheme.text}`}>
+                    <thead className={`${currentTheme.headerBg} ${currentTheme.muted} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
                         <tr>
                             {visibleColumns.tarefa && <th className="px-6 py-4">Tarefa</th>}
                             {visibleColumns.cliente && <th className="px-6 py-4">Cliente</th>}
@@ -659,12 +706,12 @@ const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
                             {visibleColumns.acoes && <th className="px-6 py-4 text-right">Ações</th>}
                         </tr>
                     </thead>
-                    <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text}`}>
+                    <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text.replace('text-white', 'text-gray-300')}`}>
                         {tasks.map((task) => (
                             <tr key={task.id} className={`hover:${currentTheme.inputBg} transition-colors`}>
-                                {visibleColumns.tarefa && <td className={`px-6 py-4 font-medium ${task.status === 'concluida' ? `opacity-50 line-through` : currentTheme.text}`}>{task.titulo}</td>}
-                                {visibleColumns.cliente && <td className={`px-6 py-4 opacity-70 flex items-center gap-2`}><Briefcase size={14} /> {task.cliente_nome || '-'}</td>}
-                                {visibleColumns.data && <td className={`px-6 py-4 opacity-70`}><div className="flex items-center gap-2"><Calendar size={14} /> {task.data_entrega ? format(safeDate(task.data_entrega), 'dd/MM/yyyy', { locale: ptBR }) : '-'}</div></td>}
+                                {visibleColumns.tarefa && <td className={`px-6 py-4 font-medium ${task.status === 'concluida' ? `${currentTheme.muted} line-through` : currentTheme.text}`}>{task.titulo}</td>}
+                                {visibleColumns.cliente && <td className={`px-6 py-4 ${currentTheme.muted} flex items-center gap-2`}><Briefcase size={14} /> {task.cliente_nome || '-'}</td>}
+                                {visibleColumns.data && <td className={`px-6 py-4 ${currentTheme.muted}`}><div className="flex items-center gap-2"><Calendar size={14} /> {task.data_entrega ? format(safeDate(task.data_entrega), 'dd/MM/yyyy', { locale: ptBR }) : '-'}</div></td>}
                                 {visibleColumns.prioridade && <td className="px-6 py-4 text-center"><Badge variant={task.prioridade === 'urgente' ? 'danger' : task.prioridade === 'alta' ? 'warning' : 'blue'}>{task.prioridade}</Badge></td>}
                                 {visibleColumns.status && <td className="px-6 py-4 text-center"><Badge variant={task.status === 'concluida' ? 'success' : task.prioridade === 'urgente' ? 'danger' : 'gray'}>{task.status}</Badge></td>}
                                 {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(task)} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.primaryText} rounded transition-colors`}><Pencil size={16} /></button><button onClick={() => onDelete(task.id, 'tasks')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded transition-colors`}><Trash2 size={16} /></button></div></td>}
@@ -692,7 +739,7 @@ const TeamView = ({ users, onAdd, onDelete, currentUserId, theme }) => {
                     <tr><th className="px-6 py-4">Nome</th><th className="px-6 py-4">Email</th><th className="px-6 py-4 text-center">Função</th><th className="px-6 py-4">Permissões</th><th className="px-6 py-4 text-right">Ações</th></tr>
                 </thead>
                 <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text}`}>
-                    {users.map(u => (<tr key={u.email} className={`hover:${currentTheme.inputBg}`}><td className={`px-6 py-4 font-medium ${currentTheme.text}`}>{u.name}</td><td className={`px-6 py-4 opacity-70`}>{u.email}</td><td className="px-6 py-4 text-center"><Badge variant={u.role === 'admin' ? 'purple' : 'blue'}>{u.role}</Badge></td><td className="px-6 py-4"><div className="flex flex-wrap gap-1">{u.role === 'admin' ? <Badge variant="purple">Acesso Total</Badge> : Object.entries(u.permissions || {}).filter(([, v]) => v).map(([k]) => (<Badge key={k} className="text-[10px] capitalize">{k}</Badge>))}</div></td><td className="px-6 py-4 text-right">{u.email !== auth.currentUser?.email && <button onClick={() => onDelete(u.email, 'team_members')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded`}><Trash2 size={16} /></button>}</td></tr>))}
+                    {users.map(u => (<tr key={u.email} className={`hover:${currentTheme.inputBg}`}><td className={`px-6 py-4 font-medium ${currentTheme.text}`}>{u.name}</td><td className={`px-6 py-4 ${currentTheme.muted}`}>{u.email}</td><td className="px-6 py-4 text-center"><Badge variant={u.role === 'admin' ? 'purple' : 'blue'}>{u.role}</Badge></td><td className="px-6 py-4"><div className="flex flex-wrap gap-1">{u.role === 'admin' ? <Badge variant="purple">Acesso Total</Badge> : Object.entries(u.permissions || {}).filter(([, v]) => v).map(([k]) => (<Badge key={k} className="text-[10px] capitalize">{k}</Badge>))}</div></td><td className="px-6 py-4 text-right">{u.email !== auth.currentUser?.email && <button onClick={() => onDelete(u.email, 'team_members')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded`}><Trash2 size={16} /></button>}</td></tr>))}
                 </tbody>
             </table>
         </div>
@@ -753,7 +800,7 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [], them
                     </div>
                 )}
 
-                <div className={`p-3 rounded border ${currentTheme.border} bg-blue-500/10 text-xs ${currentTheme.text} opacity-70`}>
+                <div className={`p-3 rounded border ${currentTheme.border} bg-blue-500/10 text-xs ${currentTheme.muted}`}>
                     <p>O utilizador deverá criar conta com este email para ter acesso.</p>
                 </div>
 
@@ -775,7 +822,7 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [], them
                 <div><Label theme={currentTheme}>Categoria</Label><Select name="category" value={formData.category || 'outras'} onChange={handleChange} theme={currentTheme}><option value="vendas">Vendas</option><option value="servicos">Serviços</option><option value="marketing">Marketing</option><option value="outras">Outras</option></Select></div>
                 <div><Label theme={currentTheme}>Data</Label><Input name="date" type="date" value={formData.date || new Date().toISOString().split('T')[0]} onChange={handleChange} theme={currentTheme} /></div>
                 <div className={`flex justify-between items-center pt-6 mt-4 border-t ${currentTheme.border}`}>
-                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.text} opacity-70 cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
+                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.muted} cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
                     <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar</Button></div>
                 </div>
             </form>
@@ -814,7 +861,7 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [], them
                 )}
                 <div><Label theme={currentTheme}>Prioridade</Label><Select name="prioridade" value={formData.prioridade || 'media'} onChange={handleChange} theme={currentTheme}><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></Select></div>
                 <div className={`flex justify-between items-center pt-6 mt-4 border-t ${currentTheme.border}`}>
-                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.text} opacity-70 cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
+                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.muted} cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
                     <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar</Button></div>
                 </div>
             </form>
@@ -833,7 +880,7 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [], them
                 </div>
                 <div><Label theme={currentTheme}>Status</Label><Select name="status" value={formData.status || 'pendente'} onChange={handleChange} theme={currentTheme}><option value="pendente">Pendente</option><option value="em_andamento">Em Andamento</option><option value="concluida">Concluída</option></Select></div>
                 <div className={`flex justify-between items-center pt-6 mt-4 border-t ${currentTheme.border}`}>
-                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.text} opacity-70 cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
+                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.muted} cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
                     <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar</Button></div>
                 </div>
             </form>
@@ -898,13 +945,13 @@ const DashboardView = ({ summary, transactions, tasks, onAdd, onEdit, onDelete, 
     );
 };
 
-const ClientsView = ({ clients, onAdd, onEdit, onDelete, theme }) => (
+const ClientsView = ({ clients, onAdd, onEdit, onDelete, theme, onUpdate }) => (
     <div className="space-y-6 max-w-full mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div><h1 className={`text-3xl font-bold ${theme.text}`}>Gestão de Clientes</h1><p className={`${theme.muted} mt-1`}>Controle seus projetos de tráfego e domínios.</p></div>
             <Button onClick={onAdd} theme={theme}><Plus className="w-5 h-5 mr-2" /> Criar Projeto</Button>
         </div>
-        <ClientTable clients={clients} onEdit={onEdit} onDelete={onDelete} theme={theme} />
+        <ClientTable clients={clients} onEdit={onEdit} onDelete={onDelete} theme={theme} onUpdate={onUpdate} />
     </div>
 );
 
@@ -1123,6 +1170,14 @@ export default function App() {
         } catch (error) { console.error(error); }
     };
 
+    // Função de atualização inline (para select da tabela de clientes)
+    const handleInlineUpdate = async (id, field, value) => {
+        if (!userId) return;
+        try {
+            await setDoc(doc(db, `artifacts/${appId}/users/${userId}/clients`, id), { [field]: value }, { merge: true });
+        } catch (e) { console.error("Erro ao atualizar:", e); }
+    };
+
     const handleMarkAsPaid = async (transaction) => {
         if (!userId) return;
         const isCompleted = ['pago', 'recebido'].includes(transaction.status);
@@ -1194,7 +1249,7 @@ export default function App() {
         <AppLayout activeTab={activeTab} setActiveTab={setActiveTab} user={user} userData={userData} onLogout={handleLogout} notifications={notifications} currentTheme={currentTheme}>
             {activeTab === 'dashboard' && <DashboardView summary={summary} transactions={transactions} tasks={tasks} onAdd={() => openAdd('transactions')} onEdit={(item) => openEdit('transactions', item)} onDelete={(id) => openDelete(id, 'transactions')} onMarkAsPaid={handleMarkAsPaid} theme={currentTheme} />}
             {activeTab === 'transactions' && <div className="space-y-6 max-w-6xl mx-auto"><div className="flex justify-between items-center"><h1 className={`text-3xl font-bold ${currentTheme.text}`}>Financeiro</h1><Button onClick={() => openAdd('transactions')} theme={currentTheme}><Plus className="w-5 h-5 mr-2" /> Nova Transação</Button></div><TransactionList transactions={transactions} onEdit={(item) => openEdit('transactions', item)} onDelete={(id) => openDelete(id, 'transactions')} onToggleStatus={handleMarkAsPaid} theme={currentTheme} /></div>}
-            {activeTab === 'clients' && <ClientsView clients={clients} onAdd={() => openAdd('clients')} onEdit={(item) => openEdit('clients', item)} onDelete={(id) => openDelete(id, 'clients')} theme={currentTheme} />}
+            {activeTab === 'clients' && <ClientsView clients={clients} onAdd={() => openAdd('clients')} onEdit={(item) => openEdit('clients', item)} onDelete={(id) => openDelete(id, 'clients')} theme={currentTheme} onUpdate={handleInlineUpdate} />}
             {activeTab === 'tasks' && <TasksView tasks={tasks} onAdd={() => openAdd('tasks')} onEdit={(item) => openEdit('tasks', item)} onDelete={(id) => openDelete(id, 'tasks')} theme={currentTheme} />}
             {activeTab === 'team' && (
                 <div className="space-y-6 max-w-6xl mx-auto">
