@@ -12,11 +12,11 @@ import {
     Plus, TrendingUp, TrendingDown, PiggyBank, Loader2, X,
     LayoutDashboard, Users, ListTodo, LogOut, DollarSign, Pencil, Trash2, Search, Filter, AlertCircle,
     Briefcase, Calendar, CheckSquare, User, Mail, Lock, Link as LinkIcon,
-    Globe, Server, Bell, Settings, ExternalLink, ChevronDown, Eye, EyeOff, Flame, Check, AlertTriangle, Shield
+    Globe, Server, Bell, Settings, ExternalLink, ChevronDown, Eye, EyeOff, Flame, Check, AlertTriangle, Shield, Clock, Hourglass, CheckCircle, RotateCcw
 } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { format, differenceInDays, parseISO, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 // --- 1. CONFIGURAÇÃO FIREBASE ---
@@ -34,6 +34,52 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const appId = "ascend-prod";
+
+// --- DEFINIÇÕES DE TEMA ---
+const THEMES = {
+    dark: {
+        label: 'Ascend Padrão', bg: 'bg-black', text: 'text-white', primary: 'bg-orange-600', primaryText: 'text-orange-500',
+        cardBg: 'bg-gray-800', border: 'border-gray-700', inputBg: 'bg-gray-900', placeholder: 'text-gray-600',
+        headerBg: 'bg-gray-900', sidebarBg: 'bg-gray-900', sidebarBorder: 'border-gray-800',
+        danger: 'text-red-400', success: 'text-emerald-400', animationColor: 'shadow-orange-900/20',
+        iconBg: 'bg-gray-900',
+    },
+    light: {
+        label: 'Claro', bg: 'bg-gray-100', text: 'text-gray-900', primary: 'bg-orange-600', primaryText: 'text-orange-600',
+        cardBg: 'bg-white', border: 'border-gray-200', inputBg: 'bg-white', placeholder: 'text-gray-400',
+        headerBg: 'bg-white', sidebarBg: 'bg-white', sidebarBorder: 'border-gray-200',
+        danger: 'text-red-600', success: 'text-emerald-600', animationColor: 'shadow-orange-300/50',
+        iconBg: 'bg-gray-100',
+    },
+    blue: {
+        label: 'Azul Corporativo', bg: 'bg-gray-900', text: 'text-white', primary: 'bg-blue-600', primaryText: 'text-blue-400',
+        cardBg: 'bg-gray-800', border: 'border-gray-700', inputBg: 'bg-gray-900', placeholder: 'text-gray-600',
+        headerBg: 'bg-gray-900', sidebarBg: 'bg-gray-900', sidebarBorder: 'border-gray-700',
+        danger: 'text-red-400', success: 'text-cyan-400', animationColor: 'shadow-blue-900/20',
+        iconBg: 'bg-slate-950',
+    },
+    matrix: {
+        label: 'Tech Matrix', bg: 'bg-black', text: 'text-green-400', primary: 'bg-green-600', primaryText: 'text-green-400',
+        cardBg: 'bg-gray-900', border: 'border-green-900', inputBg: 'bg-black', placeholder: 'text-green-900',
+        headerBg: 'bg-black', sidebarBg: 'bg-black', sidebarBorder: 'border-green-900',
+        danger: 'text-red-500', success: 'text-cyan-400', animationColor: 'shadow-green-500/10',
+        iconBg: 'bg-gray-900',
+    },
+    corp: {
+        label: 'Corporate Gray', bg: 'bg-gray-200', text: 'text-gray-900', primary: 'bg-blue-800', primaryText: 'text-blue-800',
+        cardBg: 'bg-white', border: 'border-slate-300', inputBg: 'bg-gray-100', placeholder: 'text-slate-500',
+        headerBg: 'bg-white', sidebarBg: 'bg-white', sidebarBorder: 'border-slate-300',
+        danger: 'text-red-700', success: 'text-green-700', animationColor: 'shadow-slate-900/10',
+        iconBg: 'bg-slate-100',
+    },
+    sunset: {
+        label: 'Sunset Gold', bg: 'bg-slate-900', text: 'text-amber-100', primary: 'bg-yellow-500', primaryText: 'text-yellow-500',
+        cardBg: 'bg-purple-900/30', border: 'border-yellow-600/30', inputBg: 'bg-purple-900/50', placeholder: 'text-purple-300',
+        headerBg: 'bg-purple-900', sidebarBg: 'bg-purple-900', sidebarBorder: 'border-yellow-600/30',
+        danger: 'text-red-400', success: 'text-orange-400', animationColor: 'shadow-yellow-500/10',
+        iconBg: 'bg-purple-950',
+    }
+};
 
 // --- UTILITÁRIOS ---
 const formatCurrency = (value) => {
@@ -58,60 +104,76 @@ const safeDate = (dateInput) => {
 };
 
 // --- 2. COMPONENTES UI BASE ---
-const Button = ({ children, onClick, className = "", variant, disabled, type = "button", ...props }) => (
-    <button
-        type={type}
-        onClick={onClick}
-        disabled={disabled}
-        className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${variant === 'ghost' ? 'hover:bg-gray-800 text-gray-400 hover:text-white' :
-                variant === 'destructive' ? 'bg-red-600 text-white hover:bg-red-700' :
-                    variant === 'outline' ? 'border border-gray-700 text-gray-300 hover:bg-gray-800' :
-                        'bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-900/20'
-            } ${className}`}
-        {...props}
-    >
-        {children}
-    </button>
-);
+const Button = ({ children, onClick, className = "", variant, disabled, type = "button", theme, ...props }) => {
+    const currentTheme = theme || THEMES.dark;
+    return (
+        <button
+            type={type}
+            onClick={onClick}
+            disabled={disabled}
+            className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${variant === 'ghost' ? `hover:${currentTheme.inputBg} ${currentTheme.placeholder} hover:${currentTheme.text}` :
+                    variant === 'destructive' ? 'bg-red-600 text-white hover:bg-red-700' :
+                        variant === 'outline' ? `border ${currentTheme.border} ${currentTheme.text} hover:${currentTheme.inputBg} hover:${currentTheme.text}` :
+                            `${currentTheme.primary} text-white hover:opacity-90 shadow-lg ${currentTheme.animationColor}`
+                } ${className}`}
+            {...props}
+        >
+            {children}
+        </button>
+    );
+};
 
-const Input = ({ className = "", ...props }) => (
-    <input
-        className={`w-full border border-gray-700 rounded-md p-2 bg-gray-900 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all placeholder-gray-600 ${className}`}
-        {...props}
-    />
-);
+const Input = ({ className = "", theme, ...props }) => {
+    const currentTheme = theme || THEMES.dark;
+    return (
+        <input
+            className={`w-full border ${currentTheme.border} rounded-md p-2 ${currentTheme.inputBg} ${currentTheme.text} focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all ${currentTheme.placeholder} ${className}`}
+            {...props}
+        />
+    );
+};
 
-const Label = ({ children }) => <label className="block text-sm font-medium text-gray-300 mb-1.5">{children}</label>;
+const Label = ({ children, theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    return <label className={`block text-sm font-medium ${currentTheme.text} opacity-90 mb-1.5`}>{children}</label>;
+};
 
-const Select = ({ children, value, onChange, name, className = "" }) => (
-    <select
-        name={name}
-        value={value}
-        onChange={onChange}
-        className={`w-full border border-gray-700 rounded-md p-2 bg-gray-900 text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none ${className}`}
-    >
-        {children}
-    </select>
-);
+const Select = ({ children, value, onChange, name, className = "", theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    return (
+        <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            className={`w-full border ${currentTheme.border} rounded-md p-2 ${currentTheme.inputBg} ${currentTheme.text} focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none ${className}`}
+        >
+            {children}
+        </select>
+    );
+};
 
-const Card = ({ children, className = "" }) => <div className={`bg-gray-800 rounded-xl shadow-md border border-gray-700 overflow-hidden ${className}`}>{children}</div>;
+const Card = ({ children, className = "", theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    return <div className={`${currentTheme.cardBg} rounded-xl shadow-md border ${currentTheme.border} overflow-hidden ${className}`}>{children}</div>;
+};
 
 const Badge = ({ children, className = "", variant }) => {
     let colors = 'bg-gray-700 text-gray-300';
-    if (variant === 'success') colors = 'bg-emerald-900/50 text-emerald-400 border border-emerald-800';
-    if (variant === 'warning') colors = 'bg-amber-900/50 text-amber-400 border border-amber-800';
-    if (variant === 'danger') colors = 'bg-red-900/50 text-red-400 border border-red-800';
-    if (variant === 'blue') colors = 'bg-blue-900/50 text-blue-400 border border-blue-800';
-    if (variant === 'orange') colors = 'bg-orange-900/50 text-orange-400 border border-orange-800';
-    if (variant === 'purple') colors = 'bg-purple-900/50 text-purple-400 border border-purple-800';
+    if (variant === 'success') colors = 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+    if (variant === 'warning') colors = 'bg-amber-500/10 text-amber-500 border border-amber-500/20';
+    if (variant === 'danger') colors = 'bg-red-500/10 text-red-500 border border-red-500/20';
+    if (variant === 'blue') colors = 'bg-blue-500/10 text-blue-500 border border-blue-500/20';
+    if (variant === 'orange') colors = 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
+    if (variant === 'purple') colors = 'bg-purple-500/10 text-purple-500 border border-purple-500/20';
 
     return <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors} ${className}`}>{children}</span>;
 };
 
 // Searchable Select Component
-const ClientSearchInput = ({ clients, selectedId, onSelect }) => {
+const ClientSearchInput = ({ clients, selectedId, onSelect, theme }) => {
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const currentTheme = theme || THEMES.dark;
 
     useEffect(() => {
         if (selectedId) {
@@ -151,12 +213,13 @@ const ClientSearchInput = ({ clients, selectedId, onSelect }) => {
                     onFocus={() => setIsOpen(true)}
                     placeholder="Digite o nome ou ID..."
                     className="pr-8"
+                    theme={currentTheme}
                 />
                 {selectedId && (
                     <button
                         type="button"
                         onClick={handleClear}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-400"
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 ${currentTheme.text} opacity-50 hover:opacity-100 hover:text-red-400`}
                     >
                         <X size={16} />
                     </button>
@@ -166,17 +229,17 @@ const ClientSearchInput = ({ clients, selectedId, onSelect }) => {
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)} />
-                    <div className="absolute z-[70] w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-2xl max-h-60 overflow-auto">
+                    <div className={`absolute z-[70] w-full mt-1 ${currentTheme.cardBg} border ${currentTheme.border} rounded-md shadow-2xl max-h-60 overflow-auto`}>
                         {filteredClients.length > 0 ? (
                             filteredClients.map(client => (
                                 <div
                                     key={client.id}
-                                    className="p-3 hover:bg-gray-700 cursor-pointer border-b border-gray-700 last:border-0 flex justify-between items-center group"
+                                    className={`p-3 hover:${currentTheme.inputBg} cursor-pointer border-b ${currentTheme.border} last:border-0 flex justify-between items-center group`}
                                     onClick={() => handleSelect(client)}
                                 >
                                     <div>
-                                        <div className="font-medium text-white group-hover:text-orange-400 transition-colors">{client.nome_projeto}</div>
-                                        <div className="text-xs text-gray-400">ID: {client.id.slice(0, 6)}...</div>
+                                        <div className={`font-medium ${currentTheme.text}`}>{client.nome_projeto}</div>
+                                        <div className={`text-xs opacity-50 ${currentTheme.text}`}>ID: {client.id.slice(0, 6)}...</div>
                                     </div>
                                     <Badge variant={client.tipo === 'dominio' ? 'blue' : 'orange'} className="text-[10px]">
                                         {client.tipo === 'dominio' ? 'Domínio' : 'Tráfego'}
@@ -184,7 +247,7 @@ const ClientSearchInput = ({ clients, selectedId, onSelect }) => {
                                 </div>
                             ))
                         ) : (
-                            <div className="p-3 text-sm text-gray-400 text-center">
+                            <div className={`p-3 text-sm opacity-50 ${currentTheme.text} text-center`}>
                                 {search ? "Nenhum cliente encontrado." : "Digite para buscar..."}
                             </div>
                         )}
@@ -196,30 +259,34 @@ const ClientSearchInput = ({ clients, selectedId, onSelect }) => {
 };
 
 // Modal/Dialog
-const Dialog = ({ open, onClose, children }) => (
-    <AnimatePresence>
-        {open && (
-            <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 relative max-h-[90vh] overflow-y-auto text-white"
-                    onClick={e => e.stopPropagation()}
-                >
-                    <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"><X size={20} /></button>
-                    {children}
-                </motion.div>
-            </div>
-        )}
-    </AnimatePresence>
-);
+const Dialog = ({ open, onClose, children, theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    return (
+        <AnimatePresence>
+            {open && (
+                <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className={`${currentTheme.cardBg} border ${currentTheme.border} rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 relative max-h-[90vh] overflow-y-auto ${currentTheme.text}`}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button onClick={onClose} className={`absolute top-4 right-4 opacity-50 hover:opacity-100 transition-colors`}><X size={20} /></button>
+                        {children}
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+};
 
 // --- 3. TELA DE LOGIN ---
 const AuthScreen = ({ onLogin, error, loading }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isRegister, setIsRegister] = useState(false);
+    const theme = THEMES.dark;
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -228,7 +295,7 @@ const AuthScreen = ({ onLogin, error, loading }) => {
 
     return (
         <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            <Card className="w-full max-w-md p-8 shadow-2xl border-gray-800 bg-gray-900">
+            <Card className="w-full max-w-md p-8 shadow-2xl border-gray-800 bg-gray-900" theme={theme}>
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-orange-500/10 mb-4 text-orange-500 border border-orange-500/20 shadow-lg shadow-orange-500/10">
                         <Flame className="w-10 h-10 fill-current" />
@@ -238,9 +305,9 @@ const AuthScreen = ({ onLogin, error, loading }) => {
                 </div>
                 {error && <div className="mb-6 p-4 bg-red-900/30 border border-red-800 rounded-lg text-sm text-red-300 flex gap-2"><AlertCircle size={16} />{error}</div>}
                 <form onSubmit={handleSubmit} className="space-y-5">
-                    <div><Label>E-mail</Label><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" /><Input type="email" className="pl-10 bg-black border-gray-800 focus:border-orange-500" value={email} onChange={(e) => setEmail(e.target.value)} required /></div></div>
-                    <div><Label>Senha</Label><div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" /><Input type="password" className="pl-10 bg-black border-gray-800 focus:border-orange-500" value={password} onChange={(e) => setPassword(e.target.value)} required /></div></div>
-                    <Button type="submit" className="w-full py-3 font-bold text-lg" disabled={loading}>{loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isRegister ? 'Criar Conta' : 'Entrar')}</Button>
+                    <div><Label theme={theme}>E-mail</Label><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" /><Input theme={theme} type="email" className="pl-10 bg-black border-gray-800 focus:border-orange-500" value={email} onChange={(e) => setEmail(e.target.value)} required /></div></div>
+                    <div><Label theme={theme}>Senha</Label><div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" /><Input theme={theme} type="password" className="pl-10 bg-black border-gray-800 focus:border-orange-500" value={password} onChange={(e) => setPassword(e.target.value)} required /></div></div>
+                    <Button theme={theme} type="submit" className="w-full py-3 font-bold text-lg" disabled={loading}>{loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isRegister ? 'Criar Conta' : 'Entrar')}</Button>
                 </form>
                 <div className="mt-6 text-center">
                     <button onClick={() => setIsRegister(!isRegister)} className="text-sm text-gray-500 hover:text-orange-400 transition-colors">
@@ -254,7 +321,7 @@ const AuthScreen = ({ onLogin, error, loading }) => {
 
 // --- 4. COMPONENTES DE NAVEGAÇÃO ---
 
-const Layout = ({ children, activeTab, setActiveTab, user, userData, onLogout, notifications = [] }) => {
+const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout, notifications = [], currentTheme }) => {
     const [showNotifications, setShowNotifications] = useState(false);
 
     const navItems = useMemo(() => {
@@ -275,42 +342,51 @@ const Layout = ({ children, activeTab, setActiveTab, user, userData, onLogout, n
         return items.filter(item => item.id === 'dashboard' || permissions[item.permission]);
     }, [userData]);
 
+    useEffect(() => {
+        document.title = `Ascend | ${navItems.find(item => item.id === activeTab)?.label || 'Gestão'}`;
+        const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = 'image/svg+xml';
+        link.rel = 'icon';
+        link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23f97316%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z%22/></svg>`;
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }, [activeTab, navItems]);
+
     return (
-        <div className="min-h-screen bg-black font-sans text-gray-100 flex flex-col md:flex-row">
+        <div className={`min-h-screen ${currentTheme.bg} font-sans ${currentTheme.text} flex flex-col md:flex-row`}>
             {/* Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-gray-900 border-r border-gray-800 h-screen sticky top-0">
-                <div className="p-6 flex items-center gap-3 border-b border-gray-800">
-                    <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-2 rounded-lg shadow-lg shadow-orange-500/20">
-                        <Flame className="w-6 h-6 text-white fill-current" />
+            <aside className={`hidden md:flex flex-col w-64 ${currentTheme.sidebarBg} border-r ${currentTheme.sidebarBorder} h-screen sticky top-0`}>
+                <div className={`p-6 flex items-center gap-3 border-b ${currentTheme.sidebarBorder}`}>
+                    <div className={`p-2 rounded-lg shadow-lg ${currentTheme.primary.replace('bg-', 'bg-opacity-20 bg-')}`}>
+                        <Flame className={`w-6 h-6 ${currentTheme.primaryText}`} />
                     </div>
-                    <span className="text-2xl font-bold tracking-tight text-white">Ascend</span>
+                    <span className={`text-2xl font-bold tracking-tight ${currentTheme.text}`}>Ascend</span>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                     {navItems.map((item) => (
-                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${activeTab === item.id ? 'bg-orange-600/10 text-orange-500 border border-orange-600/20' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
+                        <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${activeTab === item.id ? `${currentTheme.primary.replace('bg-', 'bg-opacity-10 bg-')} ${currentTheme.primaryText} border ${currentTheme.border}` : `text-gray-400 hover:${currentTheme.inputBg} hover:${currentTheme.text}`}`}>
                             <item.icon className="w-5 h-5" /> {item.label}
                         </button>
                     ))}
                 </nav>
-                <div className="p-4 border-t border-gray-800">
+                <div className={`p-4 border-t ${currentTheme.sidebarBorder}`}>
                     <div className="flex items-center gap-3 mb-3 px-2">
-                        <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-orange-500 font-bold uppercase shadow-sm">{user?.email?.[0] || 'U'}</div>
-                        <div className="flex-1 min-w-0 overflow-hidden"><p className="text-sm font-medium truncate text-white">{user?.email}</p><p className="text-xs text-gray-500 capitalize">{userData?.role || 'Gestor'}</p></div>
-                        <Button variant="ghost" size="icon" onClick={onLogout} className="text-gray-500 hover:text-red-400"><LogOut className="w-5 h-5" /></Button>
+                        <div className={`w-10 h-10 rounded-full ${currentTheme.cardBg} border ${currentTheme.border} flex items-center justify-center ${currentTheme.primaryText} font-bold uppercase shadow-sm`}>{user?.email?.[0] || 'U'}</div>
+                        <div className="flex-1 min-w-0 overflow-hidden"><p className={`text-sm font-medium truncate ${currentTheme.text}`}>{user?.email}</p><p className="text-xs opacity-70 capitalize">{userData?.role || 'Gestor'}</p></div>
+                        <Button variant="ghost" size="icon" onClick={onLogout} className="text-gray-400 hover:text-red-400"><LogOut className="w-5 h-5" /></Button>
                     </div>
                 </div>
             </aside>
 
             {/* Mobile Header */}
-            <div className="md:hidden bg-gray-900 border-b border-gray-800 p-4 flex justify-between items-center sticky top-0 z-20">
-                <div className="flex items-center gap-2"><Flame className="w-6 h-6 text-orange-500 fill-current" /><span className="font-bold text-lg text-white">Ascend</span></div>
-                <Button variant="ghost" onClick={onLogout}><LogOut className="w-5 h-5 text-gray-400" /></Button>
+            <div className={`md:hidden ${currentTheme.sidebarBg} border-b ${currentTheme.sidebarBorder} p-4 flex justify-between items-center sticky top-0 z-20`}>
+                <div className="flex items-center gap-2"><Flame className={`w-6 h-6 ${currentTheme.primaryText}`} /><span className={`font-bold text-lg ${currentTheme.text}`}>Ascend</span></div>
+                <Button variant="ghost" onClick={onLogout} className="text-gray-400 hover:text-white"><LogOut className="w-5 h-5" /></Button>
             </div>
 
             {/* Mobile Nav */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around p-2 z-50">
+            <div className={`md:hidden fixed bottom-0 left-0 right-0 ${currentTheme.sidebarBg} border-t ${currentTheme.sidebarBorder} flex justify-around p-2 z-50`}>
                 {navItems.slice(0, 4).map((item) => (
-                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`p-2 rounded-lg flex flex-col items-center ${activeTab === item.id ? 'text-orange-500' : 'text-gray-500'}`}>
+                    <button key={item.id} onClick={() => setActiveTab(item.id)} className={`p-2 rounded-lg flex flex-col items-center ${activeTab === item.id ? currentTheme.primaryText : 'text-gray-400'}`}>
                         <item.icon className="w-6 h-6" /> <span className="text-[10px] mt-1">{item.label}</span>
                     </button>
                 ))}
@@ -321,28 +397,28 @@ const Layout = ({ children, activeTab, setActiveTab, user, userData, onLogout, n
                 {/* Top Bar with Notifications */}
                 <div className="flex justify-end mb-8">
                     <div className="relative">
-                        <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 bg-gray-800 rounded-full shadow-sm border border-gray-700 hover:bg-gray-700 relative transition-colors">
-                            <Bell className="w-5 h-5 text-gray-400" />
+                        <button onClick={() => setShowNotifications(!showNotifications)} className={`p-2 ${currentTheme.cardBg} rounded-full shadow-sm border ${currentTheme.border} hover:${currentTheme.inputBg} relative transition-colors`}>
+                            <Bell className={`w-5 h-5 ${currentTheme.text} opacity-70`} />
                             {notifications.length > 0 && (
                                 <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-800 animate-pulse"></span>
                             )}
                         </button>
                         {showNotifications && (
-                            <div className="absolute right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border border-gray-700 z-50 overflow-hidden">
-                                <div className="p-3 border-b border-gray-700 bg-gray-900 font-medium text-sm text-gray-300">Notificações</div>
+                            <div className={`absolute right-0 mt-2 w-80 ${currentTheme.cardBg} rounded-xl shadow-2xl border ${currentTheme.border} z-50 overflow-hidden`}>
+                                <div className={`p-3 border-b ${currentTheme.border} ${currentTheme.headerBg} font-medium text-sm ${currentTheme.text}`}>Notificações</div>
                                 <div className="max-h-64 overflow-y-auto">
                                     {notifications.length === 0 ? (
-                                        <div className="p-4 text-center text-gray-500 text-sm">Sem notificações novas.</div>
+                                        <div className={`p-4 text-center opacity-70 text-sm ${currentTheme.text}`}>Sem notificações novas.</div>
                                     ) : (
                                         notifications.map((note, idx) => (
-                                            <div key={idx} className="p-3 border-b border-gray-700 hover:bg-gray-700/50 last:border-0 transition-colors">
+                                            <div key={idx} className={`p-3 border-b ${currentTheme.border} hover:${currentTheme.inputBg} last:border-0 transition-colors`}>
                                                 <div className="flex items-start gap-3">
                                                     <div className="bg-red-500/10 p-1.5 rounded-full">
                                                         <AlertCircle className="w-4 h-4 text-red-500" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-medium text-white">{note.title}</p>
-                                                        <p className="text-xs text-gray-400 mt-0.5">{note.message}</p>
+                                                        <p className={`text-sm font-medium ${currentTheme.text}`}>{note.title}</p>
+                                                        <p className={`text-xs opacity-70 mt-0.5 ${currentTheme.text}`}>{note.message}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -362,72 +438,135 @@ const Layout = ({ children, activeTab, setActiveTab, user, userData, onLogout, n
 
 // --- 5. COMPONENTES DE DADOS ---
 
-const StatsCard = ({ title, value, icon: IconComponent, color, trend }) => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <Card className="p-6 relative overflow-hidden hover:border-orange-500/30 transition-all group">
-            <div className={`absolute top-0 right-0 w-32 h-32 ${color.replace('bg-', 'bg-').replace('text-', 'text-')} opacity-5 rounded-full blur-2xl -mr-8 -mt-8 group-hover:opacity-10 transition-opacity`} />
-            <div className="flex justify-between items-start relative z-10">
-                <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">{title}</p>
-                    <p className="text-3xl font-bold text-white mt-2">{value}</p>
-                    {trend && <div className={`flex items-center gap-1 text-sm font-medium mt-2 ${trend.positive ? 'text-emerald-400' : 'text-red-400'}`}><span>{trend.positive ? '↑' : '↓'}</span> {trend.text}</div>}
+const StatsCard = ({ title, value, icon: IconComponent, color, trend, theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    return (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <Card className={`p-6 relative overflow-hidden hover:border-orange-500/30 transition-all group`} theme={currentTheme}>
+                <div className={`absolute top-0 right-0 w-32 h-32 ${color.replace('text-', 'bg-')} opacity-5 rounded-full blur-2xl -mr-8 -mt-8 group-hover:opacity-10 transition-opacity`} />
+                <div className="flex justify-between items-start relative z-10">
+                    <div>
+                        <p className={`text-xs font-bold opacity-70 uppercase tracking-widest ${currentTheme.text}`}>{title}</p>
+                        <p className={`text-3xl font-bold ${currentTheme.text} mt-2`}>{value}</p>
+                        {trend && <div className={`flex items-center gap-1 text-sm font-medium mt-2 ${trend.positive ? currentTheme.success : currentTheme.danger}`}><span>{trend.positive ? '↑' : '↓'}</span> {trend.text}</div>}
+                    </div>
+                    <div className={`p-3 ${currentTheme.iconBg} border ${currentTheme.border} rounded-xl shadow-lg`}><IconComponent className={`w-6 h-6 ${color}`} /></div>
                 </div>
-                <div className={`p-3 bg-gray-900 border border-gray-700 rounded-xl shadow-lg`}><IconComponent className={`w-6 h-6 ${color}`} /></div>
+            </Card>
+        </motion.div>
+    );
+};
+
+const BalanceCard = ({ summary, theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    return (
+        <Card className="h-[350px] flex flex-col relative overflow-hidden" theme={currentTheme}>
+            <div className={`p-6 border-b ${currentTheme.border} ${currentTheme.headerBg} flex justify-between items-center`}>
+                <h3 className={`font-bold ${currentTheme.text} text-lg`}>Resumo</h3>
+            </div>
+
+            <div className="flex-1 p-6 flex flex-col justify-center items-center gap-6 relative z-10">
+                <div className="text-center">
+                    <p className={`text-sm opacity-70 uppercase tracking-wide mb-2 ${currentTheme.text}`}>Saldo Atual</p>
+                    <p className={`text-5xl font-bold ${summary.saldo >= 0 ? currentTheme.primaryText : currentTheme.danger}`}>
+                        {formatCurrency(summary.saldo)}
+                    </p>
+                </div>
+
+                <div className="w-full space-y-2">
+                    <div className={`w-full h-4 ${currentTheme.inputBg} rounded-full overflow-hidden relative border ${currentTheme.border}`}>
+                        <div className={`h-full ${currentTheme.primary}`} style={{ width: '70%' }} />
+                        <div className={`absolute top-0 h-full w-1 ${currentTheme.cardBg}`} style={{ left: '70%' }} />
+                    </div>
+                    <div className={`flex justify-between w-full text-xs opacity-70 font-medium uppercase tracking-wider ${currentTheme.text}`}>
+                        <span>Entradas</span>
+                        <span>Saídas</span>
+                    </div>
+                </div>
             </div>
         </Card>
-    </motion.div>
-);
+    );
+}
 
-const TransactionList = ({ transactions, onEdit, onDelete }) => {
-    if (transactions.length === 0) return <div className="text-center py-12 bg-gray-800/50 rounded-xl border border-dashed border-gray-700"><DollarSign className="w-12 h-12 bg-gray-800 rounded-full p-2 mx-auto mb-3 text-gray-600" /><p className="text-gray-500">Nenhuma transação encontrada.</p></div>;
+const TransactionList = ({ transactions, onEdit, onDelete, onToggleStatus, theme, limit }) => {
+    const currentTheme = theme || THEMES.dark;
+    const displayList = limit ? transactions.slice(0, limit) : transactions;
+
+    if (displayList.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><DollarSign className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.text}>Nenhuma transação encontrada.</p></div>;
+
     return (
         <div className="space-y-3">
-            {transactions.map((t) => (
-                <motion.div key={t.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 hover:border-orange-500/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-lg bg-gray-900 border border-gray-700`}>{t.type === 'receita' ? <TrendingUp size={20} className="text-emerald-500" /> : <TrendingDown size={20} className="text-red-500" />}</div>
-                            <div>
-                                <p className="font-bold text-white">{t.description}</p>
-                                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400 mt-1">
-                                    <span>{format(safeDate(t.date), "dd MMM", { locale: ptBR })}</span>
-                                    {t.clientName && <span className="px-2 py-0.5 bg-gray-900 text-orange-400 rounded flex items-center gap-1 border border-gray-700"><User size={10} /> {t.clientName}</span>}
-                                    <Badge variant={t.status === 'pago' || t.status === 'recebido' ? 'success' : 'warning'} className="capitalize">{t.status}</Badge>
+            {displayList.map((t) => {
+                const isCompleted = ['pago', 'recebido'].includes(t.status);
+                return (
+                    <motion.div key={t.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}>
+                        <div className={`${currentTheme.cardBg} p-4 rounded-xl border ${currentTheme.border} hover:shadow-lg transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-lg ${currentTheme.iconBg} border ${currentTheme.border}`}>{t.type === 'receita' ? <TrendingUp size={20} className={currentTheme.success} /> : <TrendingDown size={20} className={currentTheme.danger} />}</div>
+                                <div>
+                                    <p className={`font-bold ${currentTheme.text}`}>{t.description}</p>
+                                    <div className={`flex flex-wrap items-center gap-2 text-xs opacity-70 mt-1 ${currentTheme.text}`}>
+                                        <span>{format(safeDate(t.date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                                        {t.clientName && <span className={`px-2 py-0.5 ${currentTheme.inputBg} ${currentTheme.primaryText} rounded flex items-center gap-1 border ${currentTheme.border}`}><User size={10} /> {t.clientName}</span>}
+                                        <Badge variant={t.status === 'pago' || t.status === 'recebido' ? 'success' : t.isOverdue ? 'danger' : 'warning'} className="capitalize">{t.isOverdue && t.status !== 'cancelado' ? 'Atrasado' : t.status}</Badge>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pl-14 sm:pl-0">
+                                <span className={`font-bold text-lg ${t.type === 'receita' ? currentTheme.success : currentTheme.danger}`}>{t.type === 'receita' ? '+' : '-'} {formatCurrency(t.amount)}</span>
+                                <div className="flex gap-2 items-center">
+                                    {onToggleStatus && (
+                                        <button
+                                            onClick={() => onToggleStatus(t)}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-sm ${isCompleted
+                                                    ? `bg-gray-600 text-white hover:bg-gray-700 border border-gray-500` // Botão Estornar (Cinza/Neutro)
+                                                    : `bg-emerald-600 text-white hover:bg-emerald-700 border border-emerald-500` // Botão Baixar (Verde)
+                                                }`}
+                                            title={isCompleted ? "Clique para estornar" : "Clique para baixar"}
+                                        >
+                                            {isCompleted ? (
+                                                <> <RotateCcw size={16} /> Estornar </>
+                                            ) : (
+                                                <> <CheckCircle size={16} /> Baixar </>
+                                            )}
+                                        </button>
+                                    )}
+                                    <div className="flex gap-1 ml-2">
+                                        <Button variant="ghost" onClick={() => onEdit(t)} className="h-9 w-9 p-0" theme={currentTheme}><Pencil size={18} /></Button>
+                                        <Button variant="ghost" onClick={() => onDelete(t.id, 'transactions')} className={`h-9 w-9 p-0 ${currentTheme.danger}`} theme={currentTheme}><Trash2 size={18} /></Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pl-14 sm:pl-0">
-                            <span className={`font-bold text-lg ${t.type === 'receita' ? 'text-emerald-400' : 'text-red-400'}`}>{t.type === 'receita' ? '+' : '-'} {formatCurrency(t.amount)}</span>
-                            <div className="flex gap-1">
-                                <Button variant="ghost" onClick={() => onEdit(t)} className="h-8 w-8 p-0"><Pencil size={16} /></Button>
-                                <Button variant="ghost" onClick={() => onDelete(t.id, 'transactions')} className="h-8 w-8 p-0 text-red-500 hover:text-red-400"><Trash2 size={16} /></Button>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            ))}
+                    </motion.div>
+                )
+            })}
         </div>
     );
 };
 
-const ClientTable = ({ clients, onEdit, onDelete }) => {
+// ... (Resto do código: ClientTable, TaskTable, TeamView, GenericForm, Views e App mantidos iguais)
+// Vou reaplicar o resto do código para garantir que está completo, mantendo as alterações feitas.
+
+const ClientTable = ({ clients, onEdit, onDelete, theme }) => {
     const [visibleColumns, setVisibleColumns] = useState({ projeto: true, gestor: true, nicho: true, prioridade: true, metaAds: true, googleAds: true, status: true, acoes: true });
     const [showColumnSelector, setShowColumnSelector] = useState(false);
+    const currentTheme = theme || THEMES.dark;
 
     const toggleColumn = (col) => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
 
-    if (clients.length === 0) return <div className="text-center py-12 bg-gray-800/50 rounded-xl border border-dashed border-gray-700"><Users className="w-12 h-12 bg-gray-800 rounded-full p-2 mx-auto mb-3 text-gray-600" /><p className="text-gray-500">Nenhum cliente registado.</p></div>;
+    if (clients.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><Users className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.text}>Nenhum cliente registado.</p></div>;
     return (
-        <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
-                <h3 className="font-semibold text-gray-200">Clientes Ativos ({clients.length})</h3>
+        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
+            <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg}`}>
+                <h3 className={`font-semibold ${currentTheme.text}`}>Clientes Ativos ({clients.length})</h3>
                 <div className="relative">
-                    <Button variant="outline" size="sm" onClick={() => setShowColumnSelector(!showColumnSelector)} className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700"><Settings size={14} /> Colunas</Button>
+                    <Button variant="outline" size="sm" onClick={() => setShowColumnSelector(!showColumnSelector)} className={`bg-gray-800 ${currentTheme.border} text-gray-300 hover:bg-gray-700`}><Settings size={14} /> Colunas</Button>
                     {showColumnSelector && (
                         <>
                             <div className="fixed inset-0 z-10" onClick={() => setShowColumnSelector(false)} />
-                            <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-20 p-2">
-                                {Object.keys(visibleColumns).map(col => (<label key={col} className="flex items-center px-2 py-1.5 hover:bg-gray-700 rounded cursor-pointer text-sm text-gray-300"><input type="checkbox" checked={visibleColumns[col]} onChange={() => toggleColumn(col)} className="mr-2 rounded bg-gray-900 border-gray-600 text-orange-600 focus:ring-orange-500" /><span className="capitalize">{col.replace(/([A-Z])/g, ' $1')}</span></label>))}
+                            <div className={`absolute right-0 mt-2 w-48 ${currentTheme.cardBg} rounded-lg shadow-xl border ${currentTheme.border} z-20 p-2`}>
+                                {Object.keys(visibleColumns).map(col => (<label key={col} className={`flex items-center px-2 py-1.5 hover:${currentTheme.inputBg} rounded cursor-pointer text-sm ${currentTheme.text} opacity-80`}><input type="checkbox" checked={visibleColumns[col]} onChange={() => toggleColumn(col)} className={`mr-2 rounded ${currentTheme.inputBg} ${currentTheme.border} ${currentTheme.primaryText} focus:ring-1`} /><span className="capitalize">{col.replace(/([A-Z])/g, ' $1')}</span></label>))}
                             </div>
                         </>
                     )}
@@ -435,7 +574,7 @@ const ClientTable = ({ clients, onEdit, onDelete }) => {
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-900 text-gray-500 uppercase text-xs font-bold tracking-wider border-b border-gray-800">
+                    <thead className={`${currentTheme.headerBg} opacity-70 uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border} ${currentTheme.text}`}>
                         <tr>
                             {visibleColumns.projeto && <th className="px-6 py-4">Projeto / Cliente</th>}
                             {visibleColumns.gestor && <th className="px-6 py-4">Gestor</th>}
@@ -447,17 +586,17 @@ const ClientTable = ({ clients, onEdit, onDelete }) => {
                             {visibleColumns.acoes && <th className="px-6 py-4 text-right">Ações</th>}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800 text-gray-300">
+                    <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text}`}>
                         {clients.map((client) => (
-                            <tr key={client.id} className="hover:bg-gray-700/30 transition-colors">
-                                {visibleColumns.projeto && <td className="px-6 py-4 font-medium text-white"><div className="flex flex-col"><span className="text-base font-bold">{client.nome_projeto}</span><span className="text-xs text-gray-500 font-mono">ID: {client.id.slice(0, 8)}</span></div></td>}
-                                {visibleColumns.gestor && <td className="px-6 py-4 text-gray-400">{client.gestor || '-'}</td>}
-                                {visibleColumns.nicho && <td className="px-6 py-4"><div className="flex items-center gap-2">{client.tipo === 'dominio' ? <Globe size={16} className="text-blue-400" /> : <TrendingUp size={16} className="text-orange-400" />}<span>{client.nicho || (client.tipo === 'dominio' ? 'Hospedagem' : 'Tráfego')}</span></div></td>}
+                            <tr key={client.id} className={`hover:${currentTheme.inputBg} transition-colors`}>
+                                {visibleColumns.projeto && <td className={`px-6 py-4 font-medium ${currentTheme.text}`}><div className="flex flex-col"><span className="text-base font-bold">{client.nome_projeto}</span><span className={`text-xs opacity-50 font-mono`}>ID: {client.id.slice(0, 8)}</span></div></td>}
+                                {visibleColumns.gestor && <td className={`px-6 py-4 opacity-70`}>{client.gestor || '-'}</td>}
+                                {visibleColumns.nicho && <td className="px-6 py-4"><div className="flex items-center gap-2">{client.tipo === 'dominio' ? <Globe size={16} className={currentTheme.success} /> : <TrendingUp size={16} className={currentTheme.primaryText} />}<span>{client.nicho || (client.tipo === 'dominio' ? 'Hospedagem' : 'Tráfego')}</span></div></td>}
                                 {visibleColumns.prioridade && <td className="px-6 py-4 text-center"><Badge variant={client.prioridade === 'alta' ? 'danger' : client.prioridade === 'media' ? 'warning' : 'blue'}>{client.prioridade}</Badge></td>}
-                                {visibleColumns.metaAds && <td className="px-6 py-4 text-center">{client.link_meta_ads ? <a href={client.link_meta_ads} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline flex items-center justify-center gap-1"><ExternalLink size={14} /> Abrir</a> : <span className="text-gray-600">-</span>}<div className="text-xs text-gray-500 mt-1">{formatCurrency(client.orcamento_facebook)}</div></td>}
-                                {visibleColumns.googleAds && <td className="px-6 py-4 text-center">{client.link_google_ads ? <a href={client.link_google_ads} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 hover:underline flex items-center justify-center gap-1"><ExternalLink size={14} /> Abrir</a> : <span className="text-gray-600">-</span>}<div className="text-xs text-gray-500 mt-1">{formatCurrency(client.orcamento_google)}</div></td>}
+                                {visibleColumns.metaAds && <td className="px-6 py-4 text-center">{client.link_meta_ads ? <a href={client.link_meta_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className="opacity-50">-</span>}<div className={`text-xs opacity-50 mt-1`}>{formatCurrency(client.orcamento_facebook)}</div></td>}
+                                {visibleColumns.googleAds && <td className="px-6 py-4 text-center">{client.link_google_ads ? <a href={client.link_google_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className="opacity-50">-</span>}<div className={`text-xs opacity-50 mt-1`}>{formatCurrency(client.orcamento_google)}</div></td>}
                                 {visibleColumns.status && <td className="px-6 py-4 text-center"><Badge variant={client.status === 'ativo' ? 'success' : 'gray'}>{client.status}</Badge></td>}
-                                {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(client)} className="p-1.5 hover:bg-gray-700 text-blue-400 rounded transition-colors"><Pencil size={16} /></button><button onClick={() => onDelete(client.id, 'clients')} className="p-1.5 hover:bg-gray-700 text-red-400 rounded transition-colors"><Trash2 size={16} /></button></div></td>}
+                                {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(client)} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.primaryText} rounded transition-colors`}><Pencil size={16} /></button><button onClick={() => onDelete(client.id, 'clients')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded transition-colors`}><Trash2 size={16} /></button></div></td>}
                             </tr>
                         ))}
                     </tbody>
@@ -467,36 +606,68 @@ const ClientTable = ({ clients, onEdit, onDelete }) => {
     );
 };
 
-const TaskTable = ({ tasks, onEdit, onDelete }) => {
+const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
     const [visibleColumns, setVisibleColumns] = useState({ tarefa: true, cliente: true, data: true, prioridade: true, status: true, acoes: true });
     const [showColumnSelector, setShowColumnSelector] = useState(false);
+    const currentTheme = theme || THEMES.dark;
 
     const toggleColumn = (col) => setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
 
-    if (tasks.length === 0) return <div className="text-center py-12 bg-gray-800/50 rounded-xl border border-dashed border-gray-700"><CheckSquare className="w-12 h-12 bg-gray-800 rounded-full p-2 mx-auto mb-3 text-gray-600" /><p className="text-gray-500">Nenhuma tarefa pendente.</p></div>;
+    // Lista de colunas disponíveis para o seletor
+    const columnOptions = [
+        { key: 'tarefa', label: 'Tarefa' },
+        { key: 'cliente', label: 'Cliente' },
+        { key: 'data', label: 'Data Entrega' },
+        { key: 'prioridade', label: 'Prioridade' },
+        { key: 'status', label: 'Status' },
+        { key: 'acoes', label: 'Ações' }
+    ];
+
+    if (tasks.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><CheckSquare className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.text}>Nenhuma tarefa pendente.</p></div>;
+
     return (
-        <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
-                <h3 className="font-semibold text-gray-200">Tarefas ({tasks.length})</h3>
+        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
+            <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg}`}>
+                <h3 className={`font-semibold ${currentTheme.text}`}>Tarefas ({tasks.length})</h3>
                 <div className="relative">
-                    <Button variant="outline" size="sm" onClick={() => setShowColumnSelector(!showColumnSelector)} className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700"><Settings size={14} /> Colunas</Button>
-                    {showColumnSelector && <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 z-20 p-2">{Object.keys(visibleColumns).map(col => (<label key={col} className="flex items-center px-2 py-1.5 hover:bg-gray-700 rounded cursor-pointer text-sm text-gray-300"><input type="checkbox" checked={visibleColumns[col]} onChange={() => toggleColumn(col)} className="mr-2 rounded bg-gray-900 border-gray-600 text-orange-600 focus:ring-orange-500" /><span className="capitalize">{col}</span></label>))}</div>}
+                    <Button variant="outline" size="sm" onClick={() => setShowColumnSelector(!showColumnSelector)} className={`bg-gray-800 ${currentTheme.border} text-gray-300 hover:bg-gray-700`}><Settings size={14} /> Colunas</Button>
+                    {showColumnSelector && (
+                        <>
+                            <div className="fixed inset-0 z-10" onClick={() => setShowColumnSelector(false)} />
+                            <div className={`absolute right-0 mt-2 w-48 ${currentTheme.cardBg} rounded-lg shadow-xl border ${currentTheme.border} z-20 p-2`}>
+                                <div className={`text-xs font-semibold ${currentTheme.text} opacity-70 mb-2 px-2`}>Selecionar Colunas</div>
+                                {columnOptions.map(col => (
+                                    <label key={col.key} className={`flex items-center px-2 py-1.5 hover:${currentTheme.inputBg} rounded cursor-pointer text-sm ${currentTheme.text}`}>
+                                        <input type="checkbox" checked={visibleColumns[col.key]} onChange={() => toggleColumn(col.key)} className={`mr-2 rounded ${currentTheme.inputBg} ${currentTheme.border} ${currentTheme.primaryText}`} />
+                                        <span>{col.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-900 text-gray-500 uppercase text-xs font-bold tracking-wider border-b border-gray-800">
-                        <tr>{visibleColumns.tarefa && <th className="px-6 py-4">Tarefa</th>}{visibleColumns.cliente && <th className="px-6 py-4">Cliente</th>}{visibleColumns.data && <th className="px-6 py-4">Entrega</th>}{visibleColumns.prioridade && <th className="px-6 py-4 text-center">Prioridade</th>}{visibleColumns.status && <th className="px-6 py-4 text-center">Status</th>}{visibleColumns.acoes && <th className="px-6 py-4 text-right">Ações</th>}</tr>
+                    <thead className={`bg-gray-900 ${currentTheme.placeholder} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border} ${currentTheme.text}`}>
+                        <tr>
+                            {visibleColumns.tarefa && <th className="px-6 py-4">Tarefa</th>}
+                            {visibleColumns.cliente && <th className="px-6 py-4">Cliente</th>}
+                            {visibleColumns.data && <th className="px-6 py-4">Entrega</th>}
+                            {visibleColumns.prioridade && <th className="px-6 py-4 text-center">Prioridade</th>}
+                            {visibleColumns.status && <th className="px-6 py-4 text-center">Status</th>}
+                            {visibleColumns.acoes && <th className="px-6 py-4 text-right">Ações</th>}
+                        </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800 text-gray-300">
+                    <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text}`}>
                         {tasks.map((task) => (
-                            <tr key={task.id} className="hover:bg-gray-700/30 transition-colors">
-                                {visibleColumns.tarefa && <td className={`px-6 py-4 font-medium ${task.status === 'concluida' ? 'line-through text-gray-500' : 'text-white'}`}>{task.titulo}</td>}
-                                {visibleColumns.cliente && <td className="px-6 py-4 text-gray-400 flex items-center gap-2"><Briefcase size={14} /> {task.cliente_nome || '-'}</td>}
-                                {visibleColumns.data && <td className="px-6 py-4 text-gray-400"><div className="flex items-center gap-2"><Calendar size={14} /> {task.data_entrega ? format(safeDate(task.data_entrega), 'dd MMM', { locale: ptBR }) : '-'}</div></td>}
-                                {visibleColumns.prioridade && <td className="px-6 py-4 text-center"><Badge variant={task.prioridade === 'alta' ? 'danger' : task.prioridade === 'media' ? 'warning' : 'blue'}>{task.prioridade}</Badge></td>}
-                                {visibleColumns.status && <td className="px-6 py-4 text-center"><Badge variant={task.status === 'concluida' ? 'success' : 'gray'}>{task.status}</Badge></td>}
-                                {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(task)} className="p-1.5 hover:bg-gray-700 text-blue-400 rounded transition-colors"><Pencil size={16} /></button><button onClick={() => onDelete(task.id, 'tasks')} className="p-1.5 hover:bg-gray-700 text-red-400 rounded transition-colors"><Trash2 size={16} /></button></div></td>}
+                            <tr key={task.id} className={`hover:${currentTheme.inputBg} transition-colors`}>
+                                {visibleColumns.tarefa && <td className={`px-6 py-4 font-medium ${task.status === 'concluida' ? `opacity-50 line-through` : currentTheme.text}`}>{task.titulo}</td>}
+                                {visibleColumns.cliente && <td className={`px-6 py-4 opacity-70 flex items-center gap-2`}><Briefcase size={14} /> {task.cliente_nome || '-'}</td>}
+                                {visibleColumns.data && <td className={`px-6 py-4 opacity-70`}><div className="flex items-center gap-2"><Calendar size={14} /> {task.data_entrega ? format(safeDate(task.data_entrega), 'dd/MM/yyyy', { locale: ptBR }) : '-'}</div></td>}
+                                {visibleColumns.prioridade && <td className="px-6 py-4 text-center"><Badge variant={task.prioridade === 'urgente' ? 'danger' : task.prioridade === 'alta' ? 'warning' : 'blue'}>{task.prioridade}</Badge></td>}
+                                {visibleColumns.status && <td className="px-6 py-4 text-center"><Badge variant={task.status === 'concluida' ? 'success' : task.prioridade === 'urgente' ? 'danger' : 'gray'}>{task.status}</Badge></td>}
+                                {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(task)} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.primaryText} rounded transition-colors`}><Pencil size={16} /></button><button onClick={() => onDelete(task.id, 'tasks')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded transition-colors`}><Trash2 size={16} /></button></div></td>}
                             </tr>
                         ))}
                     </tbody>
@@ -506,47 +677,22 @@ const TaskTable = ({ tasks, onEdit, onDelete }) => {
     );
 };
 
-// --- 7. PAINEL DE UTILIZADORES (NOVO) ---
-
-const TeamView = ({ users, onAdd, onDelete, currentUserId }) => {
-    if (users.length === 0) return <div className="text-center py-12"><p className="text-gray-500">Sem membros na equipa.</p></div>;
-
+// --- 7. PAINEL DE UTILIZADORES (TEAMVIEW) ---
+const TeamView = ({ users, onAdd, onDelete, currentUserId, theme }) => {
+    const currentTheme = theme || THEMES.dark;
+    if (users.length === 0) return <div className={`text-center py-12 ${currentTheme.muted}`}><p>Sem membros na equipa.</p></div>;
     return (
-        <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-700 bg-gray-900/50 flex justify-between items-center">
-                <h3 className="font-semibold text-gray-200">Membros da Equipa ({users.length})</h3>
-                <Button size="sm" onClick={onAdd}><Plus size={14} className="mr-1" /> Adicionar Gestor</Button>
+        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
+            <div className={`p-4 border-b ${currentTheme.border} ${currentTheme.headerBg} flex justify-between items-center`}>
+                <h3 className={`font-semibold ${currentTheme.text}`}>Membros da Equipa ({users.length})</h3>
+                {/* Botão Removido para evitar duplicidade */}
             </div>
             <table className="w-full text-sm text-left">
-                <thead className="bg-gray-900 text-gray-500 uppercase text-xs font-bold tracking-wider border-b border-gray-800">
-                    <tr>
-                        <th className="px-6 py-4">Nome</th>
-                        <th className="px-6 py-4">Email</th>
-                        <th className="px-6 py-4 text-center">Função</th>
-                        <th className="px-6 py-4">Permissões</th>
-                        <th className="px-6 py-4 text-right">Ações</th>
-                    </tr>
+                <thead className={`bg-gray-900 ${currentTheme.placeholder} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
+                    <tr><th className="px-6 py-4">Nome</th><th className="px-6 py-4">Email</th><th className="px-6 py-4 text-center">Função</th><th className="px-6 py-4">Permissões</th><th className="px-6 py-4 text-right">Ações</th></tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800 text-gray-300">
-                    {users.map(u => (
-                        <tr key={u.id} className="hover:bg-gray-700/30">
-                            <td className="px-6 py-4 font-medium text-white">{u.name}</td>
-                            <td className="px-6 py-4 text-gray-400">{u.email}</td>
-                            <td className="px-6 py-4 text-center"><Badge variant={u.role === 'admin' ? 'purple' : 'blue'}>{u.role}</Badge></td>
-                            <td className="px-6 py-4">
-                                <div className="flex flex-wrap gap-1">
-                                    {u.role === 'admin' ? <Badge variant="purple">Acesso Total</Badge> :
-                                        Object.entries(u.permissions || {}).filter(([, v]) => v).map(([k]) => (
-                                            <Badge key={k} className="text-[10px] capitalize">{k}</Badge>
-                                        ))
-                                    }
-                                </div>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                                {u.id !== currentUserId && <button onClick={() => onDelete(u.id)} className="p-1.5 hover:bg-gray-700 text-red-400 rounded"><Trash2 size={16} /></button>}
-                            </td>
-                        </tr>
-                    ))}
+                <tbody className={`divide-y ${currentTheme.border} ${currentTheme.text}`}>
+                    {users.map(u => (<tr key={u.email} className={`hover:${currentTheme.inputBg}`}><td className={`px-6 py-4 font-medium ${currentTheme.text}`}>{u.name}</td><td className={`px-6 py-4 opacity-70`}>{u.email}</td><td className="px-6 py-4 text-center"><Badge variant={u.role === 'admin' ? 'purple' : 'blue'}>{u.role}</Badge></td><td className="px-6 py-4"><div className="flex flex-wrap gap-1">{u.role === 'admin' ? <Badge variant="purple">Acesso Total</Badge> : Object.entries(u.permissions || {}).filter(([, v]) => v).map(([k]) => (<Badge key={k} className="text-[10px] capitalize">{k}</Badge>))}</div></td><td className="px-6 py-4 text-right">{u.email !== auth.currentUser?.email && <button onClick={() => onDelete(u.email, 'team_members')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded`}><Trash2 size={16} /></button>}</td></tr>))}
                 </tbody>
             </table>
         </div>
@@ -561,9 +707,10 @@ const DEFAULT_CLIENT = { tipo: 'trafego', status: 'ativo', prioridade: 'media', 
 const DEFAULT_TASK = { status: 'pendente', prioridade: 'media', data_entrega: new Date().toISOString().substring(0, 10) };
 const DEFAULT_USER = { role: 'gestor', permissions: { dashboard: true, financeiro: false, clientes: true, tarefas: true } };
 
-const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) => {
+const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [], theme }) => {
     const [formData, setFormData] = useState(initialData || (type === 'transactions' ? DEFAULT_TRANSACTION : type === 'clients' ? DEFAULT_CLIENT : type === 'users' ? DEFAULT_USER : DEFAULT_TASK));
     const [keepOpen, setKeepOpen] = useState(false);
+    const currentTheme = theme || THEMES.dark;
 
     const handleChange = (e) => {
         const { name, value, checked } = e.target;
@@ -583,22 +730,22 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) =>
         }
     };
 
-    // FORM DE UTILIZADOR (NOVO)
+    // FORM DE UTILIZADOR (USERS)
     if (type === 'users') {
         return (
             <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Nome do Gestor</Label><Input name="name" value={formData.name || ''} onChange={handleChange} required /></div>
-                <div><Label>Email (Login)</Label><Input name="email" type="email" value={formData.email || ''} onChange={handleChange} required /></div>
+                <div><Label theme={currentTheme}>Nome do Gestor</Label><Input name="name" value={formData.name || ''} onChange={handleChange} required theme={currentTheme} /></div>
+                <div><Label theme={currentTheme}>Email (Login)</Label><Input name="email" type="email" value={formData.email || ''} onChange={handleChange} required theme={currentTheme} /></div>
 
-                <div><Label>Função</Label><Select name="role" value={formData.role} onChange={handleChange}><option value="gestor">Gestor</option><option value="admin">Administrador</option></Select></div>
+                <div><Label theme={currentTheme}>Função</Label><Select name="role" value={formData.role} onChange={handleChange} theme={currentTheme}><option value="gestor">Gestor</option><option value="admin">Administrador</option></Select></div>
 
                 {formData.role !== 'admin' && (
-                    <div className="bg-gray-900 p-3 rounded border border-gray-700">
-                        <Label>Permissões de Acesso</Label>
+                    <div className={`p-3 rounded border ${currentTheme.border} ${currentTheme.inputBg}`}>
+                        <Label theme={currentTheme}>Permissões de Acesso</Label>
                         <div className="grid grid-cols-2 gap-2 mt-2">
                             {['dashboard', 'financeiro', 'clientes', 'tarefas'].map(p => (
-                                <label key={p} className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
-                                    <input type="checkbox" name={`perm_${p}`} checked={formData.permissions?.[p]} onChange={handleChange} className="rounded bg-gray-800 border-gray-600 text-orange-500 focus:ring-orange-500" />
+                                <label key={p} className={`flex items-center gap-2 text-sm ${currentTheme.text} cursor-pointer`}>
+                                    <input type="checkbox" name={`perm_${p}`} checked={formData.permissions?.[p]} onChange={handleChange} className="rounded text-orange-500 focus:ring-orange-500" />
                                     <span className="capitalize">{p}</span>
                                 </label>
                             ))}
@@ -606,11 +753,11 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) =>
                     </div>
                 )}
 
-                <div className="bg-blue-900/20 p-3 rounded border border-blue-800/50 text-xs text-blue-300">
-                    <p>O utilizador deverá criar conta com este email para ter acesso. Se já tiver conta, as permissões serão atualizadas.</p>
+                <div className={`p-3 rounded border ${currentTheme.border} bg-blue-500/10 text-xs ${currentTheme.text} opacity-70`}>
+                    <p>O utilizador deverá criar conta com este email para ter acesso.</p>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-6 mt-4 border-t border-gray-700"><Button variant="outline" onClick={onCancel} className="border-gray-600 text-gray-300 hover:bg-gray-700">Cancelar</Button><Button type="submit">Salvar Permissões</Button></div>
+                <div className={`flex justify-end gap-3 pt-6 mt-4 border-t ${currentTheme.border}`}><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar Permissões</Button></div>
             </form>
         );
     }
@@ -620,16 +767,16 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) =>
         return (
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Tipo</Label><Select name="type" value={formData.type || 'despesa'} onChange={handleChange}><option value="receita">Receita</option><option value="despesa">Despesa</option></Select></div>
-                    <div><Label>Valor</Label><Input name="amount" type="number" step="0.01" value={formData.amount || ''} onChange={handleChange} required placeholder="0,00" /></div>
+                    <div><Label theme={currentTheme}>Tipo</Label><Select name="type" value={formData.type || 'despesa'} onChange={handleChange} theme={currentTheme}><option value="receita">Receita</option><option value="despesa">Despesa</option></Select></div>
+                    <div><Label theme={currentTheme}>Valor</Label><Input name="amount" type="number" step="0.01" value={formData.amount || ''} onChange={handleChange} required placeholder="0,00" theme={currentTheme} /></div>
                 </div>
-                <div><Label>Vincular Cliente (Opcional)</Label><ClientSearchInput clients={clients} selectedId={formData.clientId} onSelect={(client) => setFormData({ ...formData, clientId: client?.id || '', clientName: client?.nome_projeto || '' })} /></div>
-                <div><Label>Descrição</Label><Input name="description" value={formData.description || ''} onChange={handleChange} required /></div>
-                <div><Label>Categoria</Label><Select name="category" value={formData.category || 'outras'} onChange={handleChange}><option value="vendas">Vendas</option><option value="servicos">Serviços</option><option value="marketing">Marketing</option><option value="outras">Outras</option></Select></div>
-                <div><Label>Data</Label><Input name="date" type="date" value={formData.date || new Date().toISOString().split('T')[0]} onChange={handleChange} /></div>
-                <div className="flex justify-between items-center pt-6 mt-4 border-t border-gray-700">
-                    {!initialData && <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded bg-gray-900 border-gray-600 text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
-                    <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} className="border-gray-600 text-gray-300 hover:bg-gray-700">Cancelar</Button><Button type="submit">Salvar</Button></div>
+                <div><Label theme={currentTheme}>Vincular Cliente (Opcional)</Label><ClientSearchInput clients={clients} selectedId={formData.clientId} onSelect={(client) => setFormData({ ...formData, clientId: client?.id || '', clientName: client?.nome_projeto || '' })} theme={currentTheme} /></div>
+                <div><Label theme={currentTheme}>Descrição</Label><Input name="description" value={formData.description || ''} onChange={handleChange} required theme={currentTheme} /></div>
+                <div><Label theme={currentTheme}>Categoria</Label><Select name="category" value={formData.category || 'outras'} onChange={handleChange} theme={currentTheme}><option value="vendas">Vendas</option><option value="servicos">Serviços</option><option value="marketing">Marketing</option><option value="outras">Outras</option></Select></div>
+                <div><Label theme={currentTheme}>Data</Label><Input name="date" type="date" value={formData.date || new Date().toISOString().split('T')[0]} onChange={handleChange} theme={currentTheme} /></div>
+                <div className={`flex justify-between items-center pt-6 mt-4 border-t ${currentTheme.border}`}>
+                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.text} opacity-70 cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
+                    <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar</Button></div>
                 </div>
             </form>
         );
@@ -640,35 +787,35 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) =>
         return (
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Tipo de Cliente</Label><Select name="tipo" value={formData.tipo || 'trafego'} onChange={handleChange}><option value="trafego">Tráfego Pago</option><option value="dominio">Domínio / Hospedagem</option></Select></div>
-                    <div><Label>Status</Label><Select name="status" value={formData.status || 'ativo'} onChange={handleChange}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></Select></div>
+                    <div><Label theme={currentTheme}>Tipo de Cliente</Label><Select name="type" value={formData.type || 'trafego'} onChange={handleChange} theme={currentTheme}><option value="trafego">Tráfego Pago</option><option value="dominio">Domínio / Hospedagem</option></Select></div>
+                    <div><Label theme={currentTheme}>Status</Label><Select name="status" value={formData.status || 'ativo'} onChange={handleChange} theme={currentTheme}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></Select></div>
                 </div>
-                <div><Label>Nome do Projeto / Cliente</Label><Input name="nome_projeto" value={formData.nome_projeto || ''} onChange={handleChange} required placeholder="Ex: Empresa X" /></div>
+                <div><Label theme={currentTheme}>Nome do Projeto / Cliente</Label><Input name="nome_projeto" value={formData.nome_projeto || ''} onChange={handleChange} required placeholder="Ex: Empresa X" theme={currentTheme} /></div>
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Gestor</Label><Input name="gestor" value={formData.gestor || ''} onChange={handleChange} /></div>
-                    <div><Label>Nicho</Label><Input name="nicho" value={formData.nicho || ''} onChange={handleChange} /></div>
+                    <div><Label theme={currentTheme}>Gestor</Label><Input name="gestor" value={formData.gestor || ''} onChange={handleChange} theme={currentTheme} /></div>
+                    <div><Label theme={currentTheme}>Nicho</Label><Input name="nicho" value={formData.nicho || ''} onChange={handleChange} theme={currentTheme} /></div>
                 </div>
                 {formData.tipo === 'trafego' ? (
                     <>
-                        <div className="grid grid-cols-2 gap-4 bg-gray-900 p-3 rounded-lg border border-gray-700">
-                            <div><Label>Orçamento FB (R$)</Label><Input name="orcamento_facebook" type="number" value={formData.orcamento_facebook || ''} onChange={handleChange} /></div>
-                            <div><Label>Link Meta Ads</Label><Input name="link_meta_ads" value={formData.link_meta_ads || ''} onChange={handleChange} placeholder="https://..." /></div>
+                        <div className={`grid grid-cols-2 gap-4 p-3 rounded-lg border ${currentTheme.border} ${currentTheme.inputBg}`}>
+                            <div><Label theme={currentTheme}>Orçamento FB (R$)</Label><Input name="orcamento_facebook" type="number" value={formData.orcamento_facebook || ''} onChange={handleChange} theme={currentTheme} /></div>
+                            <div><Label theme={currentTheme}>Link Meta Ads</Label><Input name="link_meta_ads" value={formData.link_meta_ads || ''} onChange={handleChange} placeholder="https://..." theme={currentTheme} /></div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 bg-gray-900 p-3 rounded-lg border border-gray-700">
-                            <div><Label>Orçamento Google (R$)</Label><Input name="orcamento_google" type="number" value={formData.orcamento_google || ''} onChange={handleChange} /></div>
-                            <div><Label>Link Google Ads</Label><Input name="link_google_ads" value={formData.link_google_ads || ''} onChange={handleChange} placeholder="https://..." /></div>
+                        <div className={`grid grid-cols-2 gap-4 p-3 rounded-lg border ${currentTheme.border} ${currentTheme.inputBg}`}>
+                            <div><Label theme={currentTheme}>Orçamento Google (R$)</Label><Input name="orcamento_google" type="number" value={formData.orcamento_google || ''} onChange={handleChange} theme={currentTheme} /></div>
+                            <div><Label theme={currentTheme}>Link Google Ads</Label><Input name="link_google_ads" value={formData.link_google_ads || ''} onChange={handleChange} placeholder="https://..." theme={currentTheme} /></div>
                         </div>
                     </>
                 ) : (
-                    <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-800/50">
-                        <Label>Data Vencimento Domínio</Label>
-                        <Input name="data_vencimento_dominio" type="date" value={formData.data_vencimento_dominio || ''} onChange={handleChange} />
+                    <div className="bg-blue-500/10 p-3 rounded-lg border border-blue-500/30">
+                        <Label theme={currentTheme}>Data Vencimento Domínio</Label>
+                        <Input name="data_vencimento_dominio" type="date" value={formData.data_vencimento_dominio || ''} onChange={handleChange} theme={currentTheme} />
                     </div>
                 )}
-                <div><Label>Prioridade</Label><Select name="prioridade" value={formData.prioridade || 'media'} onChange={handleChange}><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></Select></div>
-                <div className="flex justify-between items-center pt-6 mt-4 border-t border-gray-700">
-                    {!initialData && <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded bg-gray-900 border-gray-600 text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
-                    <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} className="border-gray-600 text-gray-300 hover:bg-gray-700">Cancelar</Button><Button type="submit">Salvar</Button></div>
+                <div><Label theme={currentTheme}>Prioridade</Label><Select name="prioridade" value={formData.prioridade || 'media'} onChange={handleChange} theme={currentTheme}><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></Select></div>
+                <div className={`flex justify-between items-center pt-6 mt-4 border-t ${currentTheme.border}`}>
+                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.text} opacity-70 cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
+                    <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar</Button></div>
                 </div>
             </form>
         );
@@ -678,16 +825,16 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) =>
     if (type === 'tasks') {
         return (
             <form onSubmit={handleSubmit} className="space-y-4">
-                <div><Label>Título da Tarefa</Label><Input name="titulo" value={formData.titulo || ''} onChange={handleChange} required /></div>
-                <div><Label>Cliente / Projeto</Label><ClientSearchInput clients={clients} selectedId={formData.cliente_id} onSelect={(client) => setFormData({ ...formData, cliente_id: client?.id || '', cliente_nome: client?.nome_projeto || '' })} /></div>
+                <div><Label theme={currentTheme}>Título da Tarefa</Label><Input name="titulo" value={formData.titulo || ''} onChange={handleChange} required theme={currentTheme} /></div>
+                <div><Label theme={currentTheme}>Cliente / Projeto</Label><ClientSearchInput clients={clients} selectedId={formData.cliente_id} onSelect={(client) => setFormData({ ...formData, cliente_id: client?.id || '', cliente_nome: client?.nome_projeto || '' })} theme={currentTheme} /></div>
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Data Entrega</Label><Input name="data_entrega" type="date" value={formData.data_entrega ? formData.data_entrega.split('T')[0] : ''} onChange={handleChange} /></div>
-                    <div><Label>Prioridade</Label><Select name="prioridade" value={formData.prioridade || 'media'} onChange={handleChange}><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></Select></div>
+                    <div><Label theme={currentTheme}>Data Entrega</Label><Input name="data_entrega" type="date" value={formData.data_entrega ? formData.data_entrega.split('T')[0] : ''} onChange={handleChange} theme={currentTheme} /></div>
+                    <div><Label theme={currentTheme}>Prioridade</Label><Select name="prioridade" value={formData.prioridade || 'media'} onChange={handleChange} theme={currentTheme}><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></Select></div>
                 </div>
-                <div><Label>Status</Label><Select name="status" value={formData.status || 'pendente'} onChange={handleChange}><option value="pendente">Pendente</option><option value="em_andamento">Em Andamento</option><option value="concluida">Concluída</option></Select></div>
-                <div className="flex justify-between items-center pt-6 mt-4 border-t border-gray-700">
-                    {!initialData && <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer"><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded bg-gray-900 border-gray-600 text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
-                    <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} className="border-gray-600 text-gray-300 hover:bg-gray-700">Cancelar</Button><Button type="submit">Salvar</Button></div>
+                <div><Label theme={currentTheme}>Status</Label><Select name="status" value={formData.status || 'pendente'} onChange={handleChange} theme={currentTheme}><option value="pendente">Pendente</option><option value="em_andamento">Em Andamento</option><option value="concluida">Concluída</option></Select></div>
+                <div className={`flex justify-between items-center pt-6 mt-4 border-t ${currentTheme.border}`}>
+                    {!initialData && <label className={`flex items-center gap-2 text-sm ${currentTheme.text} opacity-70 cursor-pointer`}><input type="checkbox" checked={keepOpen} onChange={(e) => setKeepOpen(e.target.checked)} className="rounded text-orange-500 focus:ring-orange-500" /> Lançamento Contínuo</label>}
+                    <div className="flex gap-3 ml-auto"><Button variant="outline" onClick={onCancel} theme={currentTheme}>Cancelar</Button><Button type="submit" theme={currentTheme}>Salvar</Button></div>
                 </div>
             </form>
         );
@@ -698,62 +845,125 @@ const GenericForm = ({ type, initialData, onSubmit, onCancel, clients = [] }) =>
 
 // --- 9. VIEWS (Páginas) ---
 
-const DashboardView = ({ summary, transactions, onAdd, onEdit, onDelete }) => (
-    <div className="space-y-8 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div><h1 className="text-3xl font-bold text-white">Dashboard</h1><p className="text-gray-400 mt-1">Visão geral da sua operação.</p></div>
-            <Button onClick={() => onAdd('transactions')}><Plus className="w-5 h-5 mr-2" /> Nova Transação</Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatsCard title="Receitas" value={formatCurrency(summary.rec)} icon={TrendingUp} color="text-emerald-400" trend={{ positive: true, text: "Entradas" }} />
-            <StatsCard title="Despesas" value={formatCurrency(summary.desp)} icon={TrendingDown} color="text-red-400" trend={{ positive: false, text: "Saídas" }} />
-            <StatsCard title="Saldo" value={formatCurrency(summary.saldo)} icon={PiggyBank} color="text-orange-400" trend={{ positive: summary.saldo >= 0, text: "Líquido" }} />
-        </div>
-        <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-                <Card className="h-[350px] flex flex-col"><div className="p-6 border-b border-gray-700 bg-gray-800/50"><h3 className="font-bold text-white">Fluxo Financeiro</h3></div><div className="flex-1 p-4 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ name: 'Atual', receitas: summary.rec, despesas: summary.desp }]}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" /><XAxis dataKey="name" axisLine={false} tickLine={false} stroke="#9CA3AF" /><YAxis axisLine={false} tickLine={false} stroke="#9CA3AF" tickFormatter={(v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact' }).format(v)} /><Tooltip formatter={(value) => formatCurrency(value)} contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#fff' }} itemStyle={{ color: '#fff' }} cursor={{ fill: '#374151' }} /><Legend iconType="circle" wrapperStyle={{ color: '#9CA3AF' }} /><Bar dataKey="receitas" name="Receitas" fill="#10B981" radius={[4, 4, 0, 0]} barSize={60} /><Bar dataKey="despesas" name="Despesas" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={60} /></BarChart></ResponsiveContainer></div></Card>
-            </div>
-            <div className="lg:col-span-1">
-                <Card className="h-[350px] flex flex-col"><div className="p-6 border-b border-gray-700 bg-gray-800/50"><h3 className="font-bold text-white">Resumo</h3></div><div className="flex-1 p-4 flex flex-col justify-center items-center gap-4"><div className="text-center"><p className="text-sm text-gray-400">Saldo Atual</p><p className={`text-3xl font-bold ${summary.saldo >= 0 ? 'text-orange-400' : 'text-red-400'}`}>{formatCurrency(summary.saldo)}</p></div><div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden"><div className="h-full bg-orange-500" style={{ width: `${(summary.rec / (summary.rec + summary.desp || 1)) * 100}%` }} /></div><div className="flex justify-between w-full text-xs text-gray-400"><span>Entradas</span><span>Saídas</span></div></div></Card>
-            </div>
-        </div>
-        <div><div className="flex items-center justify-between mb-4"><h2 className="text-xl font-bold text-white">Últimas Movimentações</h2></div><TransactionList transactions={transactions} limit={5} onEdit={(item) => openEdit('transactions', item)} onDelete={onDelete} /></div>
-    </div>
-);
+const DashboardView = ({ summary, transactions, tasks, onAdd, onEdit, onDelete, onMarkAsPaid, theme }) => {
+    const taskSummary = useMemo(() => {
+        const total = tasks.length;
+        const completed = tasks.filter(t => t.status === 'concluida').length;
+        const pending = tasks.filter(t => t.status === 'pendente' || t.status === 'em_andamento').length;
+        const overdue = tasks.filter(t => (t.status === 'pendente' || t.status === 'em_andamento') && isBefore(safeDate(t.data_entrega), startOfDay(new Date()))).length;
+        return { total, completed, pending, overdue };
+    }, [tasks]);
+    const currentTheme = theme || THEMES.dark;
 
-const ClientsView = ({ clients, onAdd, onEdit, onDelete }) => (
+    return (
+        <div className="space-y-8 max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div><h1 className={`text-3xl font-bold ${currentTheme.text}`}>Dashboard</h1><p className={`${currentTheme.muted} mt-1`}>Visão geral da sua operação.</p></div>
+                <Button onClick={() => onAdd('transactions')} theme={currentTheme}><Plus className="w-5 h-5 mr-2" /> Nova Transação</Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <StatsCard title="Receitas" value={formatCurrency(summary.rec)} icon={TrendingUp} color="text-emerald-400" trend={{ positive: true, text: "Entradas" }} theme={currentTheme} />
+                <StatsCard title="Despesas" value={formatCurrency(summary.desp)} icon={TrendingDown} color="text-red-400" trend={{ positive: false, text: "Saídas" }} theme={currentTheme} />
+                <StatsCard title="Saldo" value={formatCurrency(summary.saldo)} icon={PiggyBank} color="text-orange-400" trend={{ positive: summary.saldo >= 0, text: "Líquido" }} theme={currentTheme} />
+            </div>
+            <div className="grid lg:grid-cols-3 gap-6">
+                <StatsCard title="Total Tarefas" value={taskSummary.total} icon={ListTodo} color="text-blue-400" theme={currentTheme} />
+                <StatsCard title="Pendentes" value={taskSummary.pending} icon={Hourglass} color="text-amber-400" theme={currentTheme} />
+                <StatsCard title="Concluídas" value={taskSummary.completed} icon={CheckSquare} color="text-emerald-400" trend={{ positive: true, text: `De ${taskSummary.total} Total` }} theme={currentTheme} />
+                <StatsCard title="Atrasadas" value={taskSummary.overdue} icon={AlertTriangle} color="text-red-400" trend={{ positive: false, text: "Urgente" }} theme={currentTheme} />
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <Card className="h-[350px] flex flex-col" theme={currentTheme}><div className={`p-6 border-b ${currentTheme.border} ${currentTheme.cardBg}/50`}><h3 className={`font-bold ${currentTheme.text}`}>Fluxo Financeiro</h3></div><div className="flex-1 p-4 w-full"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ name: 'Atual', receitas: summary.rec, despesas: summary.desp }]}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke={currentTheme.label === 'Claro' ? '#e5e7eb' : '#374151'} /><XAxis dataKey="name" axisLine={false} tickLine={false} stroke={currentTheme.label === 'Claro' ? '#374151' : '#9CA3AF'} /><YAxis axisLine={false} tickLine={false} stroke={currentTheme.label === 'Claro' ? '#374151' : '#9CA3AF'} tickFormatter={(v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact' }).format(v)} /><Tooltip formatter={(value) => formatCurrency(value)} contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#fff' }} itemStyle={{ color: '#fff' }} cursor={{ fill: '#374151' }} /><Legend iconType="circle" wrapperStyle={{ color: '#9CA3AF' }} /><Bar dataKey="receitas" name="Receitas" fill="#10B981" radius={[4, 4, 0, 0]} barSize={60} /><Bar dataKey="despesas" name="Despesas" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={60} /></BarChart></ResponsiveContainer></div></Card>
+                </div>
+                <div className="lg:col-span-1">
+                    <BalanceCard summary={summary} theme={currentTheme} />
+                </div>
+            </div>
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className={`text-xl font-bold ${currentTheme.text}`}>Últimas Movimentações</h2>
+                </div>
+                <TransactionList
+                    transactions={transactions}
+                    limit={5}
+                    onEdit={(item) => onEdit('transactions', item)}
+                    onDelete={onDelete}
+                    onToggleStatus={onMarkAsPaid}
+                    theme={currentTheme}
+                />
+            </div>
+        </div>
+    );
+};
+
+const ClientsView = ({ clients, onAdd, onEdit, onDelete, theme }) => (
     <div className="space-y-6 max-w-full mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div><h1 className="text-3xl font-bold text-white">Gestão de Clientes</h1><p className="text-gray-400 mt-1">Controle seus projetos de tráfego e domínios.</p></div>
-            <Button onClick={onAdd}><Plus className="w-5 h-5 mr-2" /> Criar Projeto</Button>
+            <div><h1 className={`text-3xl font-bold ${theme.text}`}>Gestão de Clientes</h1><p className={`${theme.muted} mt-1`}>Controle seus projetos de tráfego e domínios.</p></div>
+            <Button onClick={onAdd} theme={theme}><Plus className="w-5 h-5 mr-2" /> Criar Projeto</Button>
         </div>
-        <ClientTable clients={clients} onEdit={onEdit} onDelete={onDelete} />
+        <ClientTable clients={clients} onEdit={onEdit} onDelete={onDelete} theme={theme} />
     </div>
 );
 
-const TasksView = ({ tasks, onAdd, onEdit, onDelete }) => (
+const TasksView = ({ tasks, onAdd, onEdit, onDelete, theme }) => (
     <div className="space-y-6 max-w-full mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div><h1 className="text-3xl font-bold text-white">Gestão de Tarefas</h1><p className="text-gray-400 mt-1">Acompanhe suas entregas e prazos.</p></div>
-            <Button onClick={onAdd}><Plus className="w-5 h-5 mr-2" /> Nova Tarefa</Button>
+            <div><h1 className={`text-3xl font-bold ${theme.text}`}>Gestão de Tarefas</h1><p className={`${theme.muted} mt-1`}>Acompanhe suas entregas e prazos.</p></div>
+            <Button onClick={onAdd} theme={theme}><Plus className="w-5 h-5 mr-2" /> Nova Tarefa</Button>
         </div>
-        <TaskTable tasks={tasks} onEdit={onEdit} onDelete={onDelete} />
+        <TaskTable tasks={tasks} onEdit={onEdit} onDelete={onDelete} theme={theme} />
     </div>
 );
 
-const SettingsView = ({ onClearDatabase }) => (
-    <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold text-white">Configurações</h1>
-        <Card className="p-6 border-red-900/50 bg-red-900/10"><h3 className="text-xl font-bold text-red-500 mb-2 flex items-center gap-2"><AlertTriangle /> Zona de Perigo</h3><p className="text-gray-400 mb-6">Ações irreversíveis.</p><div className="flex items-center justify-between p-4 bg-black/20 rounded-lg border border-red-900/30"><div><h4 className="font-medium text-white">Limpar Base de Dados</h4><p className="text-sm text-gray-500">Apaga permanentemente todas as transações, clientes e tarefas.</p></div><Button variant="destructive" onClick={onClearDatabase}>Limpar Tudo</Button></div></Card>
-    </div>
-);
+const SettingsView = ({ onClearDatabase, currentThemeKey, onChangeTheme, theme }) => {
+    const currentTheme = theme || THEMES.dark; // Tema base para a view
+
+    return (
+        <div className="max-w-4xl mx-auto space-y-8">
+            <h1 className={`text-3xl font-bold ${currentTheme.text}`}>Configurações</h1>
+
+            <Card className="p-6" theme={currentTheme}>
+                <h3 className={`text-xl font-bold ${currentTheme.primaryText} mb-4`}>Aparência</h3>
+                <Label theme={currentTheme}>Tema da Aplicação</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+                    {Object.keys(THEMES).map(key => (
+                        <button
+                            key={key}
+                            onClick={() => onChangeTheme(key)}
+                            className={`p-3 rounded-xl border-4 transition-all h-28 flex flex-col items-center justify-center text-sm font-medium ${currentThemeKey === key ? 'border-orange-500' : `border-gray-600 hover:border-gray-500`
+                                } ${THEMES[key].cardBg} ${THEMES[key].previewText || THEMES[key].text}`}
+                        >
+                            <div className={`w-8 h-8 rounded-full ${THEMES[key].primary} mb-2`}></div>
+                            <span className="capitalize">{THEMES[key].label}</span>
+                        </button>
+                    ))}
+                </div>
+            </Card>
+
+            <Card className="p-6 border-red-900/50 bg-red-900/10" theme={currentTheme}>
+                <h3 className="text-xl font-bold text-red-500 mb-2 flex items-center gap-2"><AlertTriangle /> Zona de Perigo</h3>
+                <p className={`${currentTheme.muted} mb-6`}>Ações irreversíveis.</p>
+                <div className={`flex items-center justify-between p-4 ${currentTheme.inputBg} rounded-lg border border-red-900/30`}>
+                    <div>
+                        <h4 className={`font-medium ${currentTheme.text}`}>Limpar Base de Dados</h4>
+                        <p className={`text-sm ${currentTheme.muted}`}>Apaga permanentemente todas as transações, clientes e tarefas.</p>
+                    </div>
+                    <Button variant="destructive" onClick={onClearDatabase} theme={currentTheme}>Limpar Tudo</Button>
+                </div>
+            </Card>
+        </div>
+    );
+};
 
 // --- 10. APP PRINCIPAL ---
 
 export default function App() {
     const [user, setUser] = useState(null);
     const [userId, setUserId] = useState(null);
-    const [userData, setUserData] = useState(null); // Armazena o perfil do utilizador (role, permissions)
+    const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [authLoading, setAuthLoading] = useState(false);
     const [authError, setAuthError] = useState('');
@@ -763,11 +973,13 @@ export default function App() {
     const [modalType, setModalType] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [deleteInfo, setDeleteInfo] = useState(null);
+    const [themeKey, setThemeKey] = useState('dark');
+    const currentTheme = THEMES[themeKey] || THEMES.dark;
 
     const [transactions, setTransactions] = useState([]);
     const [clients, setClients] = useState([]);
     const [tasks, setTasks] = useState([]);
-    const [teamUsers, setTeamUsers] = useState([]); // Lista de utilizadores da equipa
+    const [teamUsers, setTeamUsers] = useState([]);
 
     // Auth & Profile Loading
     useEffect(() => {
@@ -776,13 +988,18 @@ export default function App() {
                 setUser(currentUser);
                 setUserId(currentUser.uid);
 
-                // Carregar o perfil do utilizador para saber permissões
                 const userDoc = await getDoc(doc(db, `artifacts/${appId}/team_members/${currentUser.uid}`));
                 if (userDoc.exists()) {
                     setUserData(userDoc.data());
                 } else {
-                    // Se for o primeiro utilizador (fallback), dar admin
-                    setUserData({ role: 'admin', name: currentUser.email });
+                    const emailDoc = await getDoc(doc(db, `artifacts/${appId}/team_members/${currentUser.email}`));
+                    if (emailDoc.exists()) {
+                        setUserData(emailDoc.data());
+                        await setDoc(doc(db, `artifacts/${appId}/team_members/${currentUser.uid}`), emailDoc.data(), { merge: true });
+                        await deleteDoc(doc(db, `artifacts/${appId}/team_members/${currentUser.email}`));
+                    } else {
+                        setUserData({ role: 'admin', name: currentUser.email, permissions: { dashboard: true, financeiro: true, clientes: true, tarefas: true } });
+                    }
                 }
             } else {
                 setUser(null);
@@ -798,7 +1015,6 @@ export default function App() {
         setAuthLoading(true); setAuthError('');
         try {
             if (isRegister) {
-                // NOTE: A criação de perfil é feita no registo, herdando o perfil se existir
                 await createUserWithEmailAndPassword(auth, email, password);
             } else {
                 await signInWithEmailAndPassword(auth, email, password);
@@ -813,25 +1029,45 @@ export default function App() {
 
     const handleLogout = async () => { try { await signOut(auth); } catch (error) { console.error(error); } };
 
-    // Sync Data Logic
+    // Data Sync Logic
     useEffect(() => {
         if (!userId) return;
-
-        // CORREÇÃO: A referência deve ser artifacts/{appId}/users/{userId}/{collectionName}
-        // No entanto, o seu código anterior estava a usar artifacts/{appId}/data/{collectionName} (4 segmentos)
-        // Para funcionar com as regras de segurança padrão (users/{userId}/{collectionName} - 5 segmentos), vou usar a estrutura users.
-
-        // Estrutura anterior: artifacts/{appId}/data/transactions
-        // Nova Estrutura (Padrão Canvas): artifacts/{appId}/users/{userId}/transactions (5 segmentos)
 
         const collectionsToSync = ['transactions', 'clients', 'tasks'];
 
         const unsubscribes = collectionsToSync.map(colName => {
             const path = `artifacts/${appId}/users/${userId}/${colName}`;
             return onSnapshot(collection(db, path), (s) => {
-                const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
-                if (colName === 'transactions') list.sort((a, b) => new Date(b.date) - new Date(a.date));
-                if (colName === 'transactions') setTransactions(list);
+                const list = s.docs.map(d => {
+                    const data = { id: d.id, ...d.data() };
+
+                    if (colName === 'transactions') {
+                        if (data.status !== 'pago' && data.status !== 'recebido' && data.status !== 'cancelado') {
+                            data.isOverdue = isBefore(safeDate(data.date), startOfDay(new Date()));
+                        }
+                    }
+
+                    if (colName === 'tasks') {
+                        const isTaskOverdue = (data.status === 'pendente' || data.status === 'em_andamento') && isBefore(safeDate(data.data_entrega), startOfDay(new Date()));
+
+                        if (isTaskOverdue && data.prioridade !== 'urgente') {
+                            const taskRef = doc(db, path, data.id);
+                            setDoc(taskRef, { prioridade: 'urgente' }, { merge: true }).catch(err => console.error("Falha ao atualizar tarefa para urgente:", err));
+                            data.prioridade = 'urgente';
+                        }
+                    }
+
+                    return data;
+                });
+
+                if (colName === 'transactions') {
+                    list.sort((a, b) => {
+                        if (a.isOverdue && !b.isOverdue) return -1;
+                        if (!a.isOverdue && b.isOverdue) return 1;
+                        return safeDate(b.date).getTime() - safeDate(a.date).getTime();
+                    });
+                    setTransactions(list);
+                }
                 if (colName === 'clients') setClients(list);
                 if (colName === 'tasks') setTasks(list);
             }, (err) => console.error(`Erro ao sincronizar ${colName}:`, err));
@@ -839,12 +1075,14 @@ export default function App() {
 
         let unsubTeam = () => { };
         if (userData?.role === 'admin') {
-            unsubTeam = onSnapshot(collection(db, `artifacts/${appId}/team_members`), (s) => setTeamUsers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+            unsubTeam = onSnapshot(collection(db, `artifacts/${appId}/team_members`), (s) => {
+                const members = s.docs.map(d => ({ id: d.id, ...d.data(), email: d.data().email || d.id, docId: d.id }));
+                setTeamUsers(members);
+            }, (err) => console.error("Erro ao sincronizar Team Members:", err));
         }
 
         return () => { unsubscribes.forEach(unsub => unsub()); unsubTeam(); };
     }, [userId, userData]);
-
 
     const notifications = useMemo(() => {
         const alerts = [];
@@ -854,8 +1092,12 @@ export default function App() {
             if (daysLeft < 0) alerts.push({ title: 'Domínio Vencido!', message: `O domínio de ${c.nome_projeto} venceu há ${Math.abs(daysLeft)} dias.`, type: 'urgent' });
             else if (daysLeft <= 5) alerts.push({ title: 'Vencimento Próximo', message: `Domínio de ${c.nome_projeto} vence em ${daysLeft} dias.`, type: 'warning' });
         });
+        const overdueTasksCount = tasks.filter(t => (t.status === 'pendente' || t.status === 'em_andamento') && isBefore(safeDate(t.data_entrega), startOfDay(new Date()))).length;
+        if (overdueTasksCount > 0) {
+            alerts.push({ title: 'Tarefas Atrasadas!', message: `${overdueTasksCount} tarefas estão com a entrega vencida. Priorize!`, type: 'urgent' });
+        }
         return alerts;
-    }, [clients]);
+    }, [clients, tasks]);
 
     const handleSave = async (data, keepOpen) => {
         if (!userId) return;
@@ -867,10 +1109,9 @@ export default function App() {
 
         try {
             if (editingItem) {
-                const docId = editingItem.id;
+                const docId = isUserDoc ? editingItem.email : editingItem.id;
                 await setDoc(doc(db, path, docId), cleanData, { merge: true });
             } else {
-                // Se for usuário (users), o ID deve ser o email do gestor para pré-cadastro
                 if (isUserDoc) {
                     await setDoc(doc(db, path, cleanData.email), cleanData, { merge: true });
                 } else {
@@ -882,18 +1123,58 @@ export default function App() {
         } catch (error) { console.error(error); }
     };
 
+    const handleMarkAsPaid = async (transaction) => {
+        if (!userId) return;
+        const isCompleted = ['pago', 'recebido'].includes(transaction.status);
+        let newStatus = 'pendente';
+
+        if (!isCompleted) {
+            newStatus = transaction.type === 'receita' ? 'recebido' : 'pago';
+        }
+
+        try {
+            await setDoc(doc(db, `artifacts/${appId}/users/${userId}/transactions`, transaction.id), { status: newStatus }, { merge: true });
+        } catch (e) { console.error(e); }
+    };
+
     const handleDelete = async () => {
         const { id, type } = deleteInfo;
         const isUserDoc = type === 'team_members';
+        const docIdToDelete = isUserDoc ? id : id;
         const path = isUserDoc ? `artifacts/${appId}/team_members` : `artifacts/${appId}/users/${userId}/${type}`;
-        try { await deleteDoc(doc(db, path, id)); } catch (error) { console.error(error); }
+
+        try {
+            await deleteDoc(doc(db, path, docIdToDelete));
+        } catch (error) {
+            console.error("Erro ao deletar:", error);
+        }
         setDeleteInfo(null);
     };
 
     const handleClearAllData = async () => {
-        if (!confirm("Tem certeza absoluta?")) return;
-        // Lógica de limpar collections... (simplificada aqui)
-        alert("Funcionalidade restrita por segurança neste exemplo.");
+        if (!confirm("Tem certeza absoluta? Isso apagará TODAS as transações, clientes e tarefas permanentemente.")) return;
+
+        setLoading(true);
+        try {
+            const collections = ['transactions', 'clients', 'tasks'];
+            const pathBase = `artifacts/${appId}/users/${userId}/`;
+
+            for (const colName of collections) {
+                const q = collection(db, pathBase + colName);
+                const snapshot = await getDocs(q);
+                const batch = writeBatch(db);
+                snapshot.docs.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+            }
+            alert("Base de dados limpa com sucesso!");
+        } catch (error) {
+            console.error("Erro ao limpar:", error);
+            alert("Erro ao limpar dados. Verifique as regras de segurança do Firestore.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const openAdd = (type) => { setModalType(type); setEditingItem(null); setModalOpen(true); };
@@ -910,21 +1191,21 @@ export default function App() {
     if (!user) return <AuthScreen onLogin={handleLogin} loading={authLoading} error={authError} />;
 
     return (
-        <Layout activeTab={activeTab} setActiveTab={setActiveTab} user={user} userData={userData} onLogout={handleLogout} notifications={notifications}>
-            {activeTab === 'dashboard' && <DashboardView summary={summary} transactions={transactions} onAdd={() => openAdd('transactions')} onEdit={(item) => openEdit('transactions', item)} onDelete={(id) => openDelete(id, 'transactions')} />}
-            {activeTab === 'transactions' && <div className="space-y-6 max-w-6xl mx-auto"><div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-white">Financeiro</h1><Button onClick={() => openAdd('transactions')}><Plus className="w-5 h-5 mr-2" /> Nova Transação</Button></div><TransactionList transactions={transactions} onEdit={(item) => openEdit('transactions', item)} onDelete={(id) => openDelete(id, 'transactions')} /></div>}
-            {activeTab === 'clients' && <ClientsView clients={clients} onAdd={() => openAdd('clients')} onEdit={(item) => openEdit('clients', item)} onDelete={(id) => openDelete(id, 'clients')} />}
-            {activeTab === 'tasks' && <TasksView tasks={tasks} onAdd={() => openAdd('tasks')} onEdit={(item) => openEdit('tasks', item)} onDelete={(id) => openDelete(id, 'tasks')} />}
+        <AppLayout activeTab={activeTab} setActiveTab={setActiveTab} user={user} userData={userData} onLogout={handleLogout} notifications={notifications} currentTheme={currentTheme}>
+            {activeTab === 'dashboard' && <DashboardView summary={summary} transactions={transactions} tasks={tasks} onAdd={() => openAdd('transactions')} onEdit={(item) => openEdit('transactions', item)} onDelete={(id) => openDelete(id, 'transactions')} onMarkAsPaid={handleMarkAsPaid} theme={currentTheme} />}
+            {activeTab === 'transactions' && <div className="space-y-6 max-w-6xl mx-auto"><div className="flex justify-between items-center"><h1 className={`text-3xl font-bold ${currentTheme.text}`}>Financeiro</h1><Button onClick={() => openAdd('transactions')} theme={currentTheme}><Plus className="w-5 h-5 mr-2" /> Nova Transação</Button></div><TransactionList transactions={transactions} onEdit={(item) => openEdit('transactions', item)} onDelete={(id) => openDelete(id, 'transactions')} onToggleStatus={handleMarkAsPaid} theme={currentTheme} /></div>}
+            {activeTab === 'clients' && <ClientsView clients={clients} onAdd={() => openAdd('clients')} onEdit={(item) => openEdit('clients', item)} onDelete={(id) => openDelete(id, 'clients')} theme={currentTheme} />}
+            {activeTab === 'tasks' && <TasksView tasks={tasks} onAdd={() => openAdd('tasks')} onEdit={(item) => openEdit('tasks', item)} onDelete={(id) => openDelete(id, 'tasks')} theme={currentTheme} />}
             {activeTab === 'team' && (
                 <div className="space-y-6 max-w-6xl mx-auto">
-                    <div className="flex justify-between items-center"><h1 className="text-3xl font-bold text-white">Gestão de Equipa</h1><Button onClick={() => openAdd('users')}><Plus className="w-5 h-5 mr-2" /> Novo Gestor</Button></div>
-                    <TeamView users={teamUsers} onAdd={() => openAdd('users')} onDelete={(id) => openDelete(id, 'team_members')} currentUserId={userId} />
+                    <div className="flex justify-between items-center"><h1 className={`text-3xl font-bold ${currentTheme.text}`}>Gestão de Equipa</h1><Button onClick={() => openAdd('users')} theme={currentTheme}><Plus className="w-5 h-5 mr-2" /> Novo Gestor</Button></div>
+                    <TeamView users={teamUsers} onAdd={() => openAdd('users')} onDelete={(id) => openDelete(id, 'team_members')} currentUserId={userId} theme={currentTheme} />
                 </div>
             )}
-            {activeTab === 'settings' && <SettingsView onClearDatabase={handleClearAllData} />}
+            {activeTab === 'settings' && <SettingsView onClearDatabase={handleClearAllData} currentThemeKey={themeKey} onChangeTheme={setThemeKey} theme={currentTheme} />}
 
-            <Dialog open={modalOpen} onClose={() => setModalOpen(false)}><h2 className="text-xl font-bold mb-4 capitalize text-white">{editingItem ? 'Editar' : 'Novo'} {modalType === 'transactions' ? 'Transação' : modalType === 'clients' ? 'Cliente' : modalType === 'users' ? 'Gestor' : 'Tarefa'}</h2><GenericForm type={modalType} initialData={editingItem} onSubmit={handleSave} onCancel={() => setModalOpen(false)} clients={clients} /></Dialog>
-            <Dialog open={!!deleteInfo} onClose={() => setDeleteInfo(null)}><h2 className="text-xl font-bold text-red-500 mb-2 flex items-center gap-2"><Trash2 className="w-5 h-5" /> Apagar Registo</h2><p className="text-gray-300 mb-6">Tem a certeza? Esta ação é irreversível.</p><div className="flex justify-end gap-3"><Button variant="ghost" onClick={() => setDeleteInfo(null)}>Cancelar</Button><Button variant="destructive" onClick={handleDelete}>Confirmar</Button></div></Dialog>
-        </Layout>
+            <Dialog open={modalOpen} onClose={() => setModalOpen(false)} theme={currentTheme}><h2 className={`text-xl font-bold mb-4 capitalize ${currentTheme.text}`}>{editingItem ? 'Editar' : 'Novo'} {modalType === 'transactions' ? 'Transação' : modalType === 'clients' ? 'Cliente' : modalType === 'users' ? 'Gestor' : 'Tarefa'}</h2><GenericForm type={modalType} initialData={editingItem} onSubmit={handleSave} onCancel={() => setModalOpen(false)} clients={clients} theme={currentTheme} /></Dialog>
+            <Dialog open={!!deleteInfo} onClose={() => setDeleteInfo(null)} theme={currentTheme}><h2 className="text-xl font-bold text-red-500 mb-2 flex items-center gap-2"><Trash2 className="w-5 h-5" /> Apagar Registo</h2><p className={`${currentTheme.muted} mb-6`}>Tem a certeza? Esta ação é irreversível.</p><div className="flex justify-end gap-3"><Button variant="ghost" onClick={() => setDeleteInfo(null)} theme={currentTheme}>Cancelar</Button><Button variant="destructive" onClick={handleDelete} theme={currentTheme}>Confirmar</Button></div></Dialog>
+        </AppLayout>
     );
 }

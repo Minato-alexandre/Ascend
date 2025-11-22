@@ -1,3 +1,37 @@
+/* 1. Injeta os estilos base do Tailwind */
 @tailwind base;
+
+/* 2. Injeta estilos de componentes reutilizáveis */
 @tailwind components;
+
+/* 3. Injeta as classes utilitárias */
 @tailwind utilities;
+
+/* --- ESTILIZAÇÃO DA BARRA DE ROLAGEM GLOBAL (Webkit) --- */
+
+/* Fundo da barra de rolagem */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px; /* Controla a altura da barra horizontal */
+}
+
+/* Cor do 'track' (o caminho da barra) */
+::-webkit-scrollbar-track {
+    background: #111827; /* Gray-900 */
+}
+
+/* Cor do 'thumb' (o pino que você arrasta) */
+::-webkit-scrollbar-thumb {
+    background: #4B5563; /* Gray-600 */
+    border-radius: 10px;
+}
+
+    /* Cor do 'thumb' ao passar o mouse */
+    ::-webkit-scrollbar-thumb:hover {
+        background: #6B7280; /* Gray-500 */
+    }
+
+/* Estilo para as tabelas internas (evitar que a barra seja branca) */
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #1F2937; /* Gray-800 */
+}
