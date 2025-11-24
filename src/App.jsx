@@ -147,7 +147,7 @@ const Input = ({ className = "", theme, ...props }) => {
 
 const Label = ({ children, theme }) => {
     const currentTheme = theme || THEMES.dark;
-    return <label className={`block text-sm font-medium ${currentTheme.text} opacity-90 mb-1.5`}>{children}</label>;
+    return <label className={`block text-sm font-medium ${currentTheme.text.replace('text-white', 'text-gray-300')} mb-1.5`}>{children}</label>;
 };
 
 const Select = ({ children, value, onChange, name, className = "", theme }) => {
@@ -410,7 +410,7 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
                 <div className="flex justify-end mb-8">
                     <div className="relative">
                         <button onClick={() => setShowNotifications(!showNotifications)} className={`p-2 ${currentTheme.cardBg} rounded-full shadow-sm border ${currentTheme.border} hover:${currentTheme.inputBg} relative transition-colors`}>
-                            <Bell className={`w-5 h-5 ${currentTheme.placeholder}`} />
+                            <Bell className={`w-5 h-5 ${currentTheme.muted}`} />
                             {notifications.length > 0 && (
                                 <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-800 animate-pulse"></span>
                             )}
@@ -520,7 +520,12 @@ const TransactionList = ({ transactions, onEdit, onDelete, onToggleStatus, theme
                                     <div className={`flex flex-wrap items-center gap-2 text-xs ${currentTheme.muted} mt-1`}>
                                         <span>{format(safeDate(t.date), "dd/MM/yyyy", { locale: ptBR })}</span>
                                         {t.clientName && <span className={`px-2 py-0.5 ${currentTheme.inputBg} ${currentTheme.primaryText} rounded flex items-center gap-1 border ${currentTheme.border}`}><User size={10} /> {t.clientName}</span>}
-                                        <Badge variant={t.status === 'pago' || t.status === 'recebido' ? 'success' : t.isOverdue ? 'danger' : 'warning'} className="capitalize">{t.isOverdue && t.status !== 'cancelado' ? 'Atrasado' : t.status}</Badge>
+                                        <Badge
+                                            variant={t.status === 'pago' || t.status === 'recebido' ? 'success' : t.isOverdue ? 'danger' : 'warning'}
+                                            className="capitalize"
+                                        >
+                                            {['pago', 'recebido'].includes(t.status) ? 'Baixado' : t.isOverdue && t.status !== 'cancelado' ? 'Atrasado' : t.status}
+                                        </Badge>
                                     </div>
                                 </div>
                             </div>
@@ -566,8 +571,8 @@ const ClientTable = ({ clients, onEdit, onDelete, theme, onUpdate }) => {
 
     if (clients.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><Users className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.muted}>Nenhum cliente registado.</p></div>;
     return (
-        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
-            <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg}`}>
+        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border}`}>
+            <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg} rounded-t-xl`}>
                 <h3 className={`font-semibold ${currentTheme.text}`}>Clientes Ativos ({clients.length})</h3>
                 <div className="relative">
                     <Button variant="outline" size="sm" onClick={() => setShowColumnSelector(!showColumnSelector)} className={`bg-gray-800 ${currentTheme.border} text-gray-300 hover:bg-gray-700`}><Settings size={14} /> Colunas</Button>
@@ -581,7 +586,7 @@ const ClientTable = ({ clients, onEdit, onDelete, theme, onUpdate }) => {
                     )}
                 </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-b-xl">
                 <table className="w-full text-sm text-left">
                     <thead className={`${currentTheme.headerBg} ${currentTheme.muted} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
                         <tr>
@@ -599,48 +604,98 @@ const ClientTable = ({ clients, onEdit, onDelete, theme, onUpdate }) => {
                         {clients.map((client) => (
                             <tr key={client.id} className={`hover:${currentTheme.inputBg} transition-colors`}>
                                 {visibleColumns.projeto && <td className={`px-6 py-4 font-medium ${currentTheme.text}`}><div className="flex flex-col"><span className="text-base font-bold">{client.nome_projeto}</span><span className={`text-xs ${currentTheme.muted} font-mono`}>ID: {client.id.slice(0, 8)}</span></div></td>}
-                                {visibleColumns.gestor && <td className={`px-6 py-4 ${currentTheme.muted}`}>{client.gestor || '-'}</td>}
-                                {visibleColumns.nicho && <td className="px-6 py-4"><div className="flex items-center gap-2">{client.tipo === 'dominio' ? <Globe size={16} className={currentTheme.success} /> : <TrendingUp size={16} className={currentTheme.primaryText} />}<span>{client.nicho || (client.tipo === 'dominio' ? 'Hospedagem' : 'Tráfego')}</span></div></td>}
+
+                                {/* EDITABLE GESTOR */}
+                                {visibleColumns.gestor && <td className={`px-6 py-4 ${currentTheme.muted}`}>
+                                    <input
+                                        type="text"
+                                        defaultValue={client.gestor || ''}
+                                        onBlur={(e) => onUpdate(client.id, 'gestor', e.target.value)}
+                                        className="bg-transparent border-b border-transparent hover:border-gray-500 focus:border-orange-500 outline-none w-full transition-colors"
+                                        placeholder="-"
+                                    />
+                                </td>}
+
+                                {/* EDITABLE NICHO */}
+                                {visibleColumns.nicho && <td className="px-6 py-4">
+                                    <div className="flex items-center gap-2">
+                                        {client.tipo === 'dominio' ? <Globe size={16} className={currentTheme.success} /> : <TrendingUp size={16} className={currentTheme.primaryText} />}
+                                        <input
+                                            type="text"
+                                            defaultValue={client.nicho || (client.tipo === 'dominio' ? 'Hospedagem' : 'Tráfego')}
+                                            onBlur={(e) => onUpdate(client.id, 'nicho', e.target.value)}
+                                            className="bg-transparent border-b border-transparent hover:border-gray-500 focus:border-orange-500 outline-none w-full transition-colors"
+                                        />
+                                    </div>
+                                </td>}
 
                                 {/* EDITABLE PRIORITY */}
                                 {visibleColumns.prioridade && <td className="px-6 py-4 text-center">
-                                    {onUpdate ? (
+                                    <div className="relative inline-block">
                                         <select
                                             value={client.prioridade}
                                             onChange={(e) => onUpdate(client.id, 'prioridade', e.target.value)}
-                                            className={`appearance-none px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer outline-none border-none text-center ${currentTheme.inputBg} ${currentTheme.text}
-                            ${client.prioridade === 'alta' ? 'text-red-500' : client.prioridade === 'media' ? 'text-amber-500' : 'text-blue-500'}
-                          `}
+                                            className={`appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-medium cursor-pointer outline-none border text-center transition-all
+                          ${client.prioridade === 'alta' ? 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20' :
+                                                    client.prioridade === 'media' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20' :
+                                                        'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20'}
+                        `}
                                         >
-                                            <option value="alta">Alta</option>
-                                            <option value="media">Média</option>
-                                            <option value="baixa">Baixa</option>
+                                            <option value="alta" className="bg-gray-900 text-white">Alta</option>
+                                            <option value="media" className="bg-gray-900 text-white">Média</option>
+                                            <option value="baixa" className="bg-gray-900 text-white">Baixa</option>
                                         </select>
-                                    ) : (
-                                        <Badge variant={client.prioridade === 'alta' ? 'danger' : client.prioridade === 'media' ? 'warning' : 'blue'}>{client.prioridade}</Badge>
-                                    )}
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-50">
+                                            <ChevronDown size={12} />
+                                        </div>
+                                    </div>
                                 </td>}
 
-                                {visibleColumns.metaAds && <td className="px-6 py-4 text-center">{client.link_meta_ads ? <a href={client.link_meta_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className={currentTheme.muted}>-</span>}<div className={`text-xs ${currentTheme.muted} mt-1`}>{formatCurrency(client.orcamento_facebook)}</div></td>}
-                                {visibleColumns.googleAds && <td className="px-6 py-4 text-center">{client.link_google_ads ? <a href={client.link_google_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className={currentTheme.muted}>-</span>}<div className={`text-xs ${currentTheme.muted} mt-1`}>{formatCurrency(client.orcamento_google)}</div></td>}
+                                {/* EDITABLE BUDGETS */}
+                                {visibleColumns.metaAds && <td className="px-6 py-4 text-center">
+                                    {client.link_meta_ads ? <a href={client.link_meta_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className={currentTheme.muted}>-</span>}
+                                    <div className={`text-xs ${currentTheme.muted} mt-1`}>
+                                        <input
+                                            type="number"
+                                            defaultValue={client.orcamento_facebook || ''}
+                                            onBlur={(e) => onUpdate(client.id, 'orcamento_facebook', parseFloat(e.target.value))}
+                                            className="bg-transparent text-center w-20 border-b border-transparent hover:border-gray-500 focus:border-orange-500 outline-none"
+                                            placeholder="R$ 0,00"
+                                        />
+                                    </div>
+                                </td>}
+
+                                {visibleColumns.googleAds && <td className="px-6 py-4 text-center">
+                                    {client.link_google_ads ? <a href={client.link_google_ads} target="_blank" rel="noreferrer" className={`${currentTheme.success} hover:underline flex items-center justify-center gap-1`}><ExternalLink size={14} /> Abrir</a> : <span className={currentTheme.muted}>-</span>}
+                                    <div className={`text-xs ${currentTheme.muted} mt-1`}>
+                                        <input
+                                            type="number"
+                                            defaultValue={client.orcamento_google || ''}
+                                            onBlur={(e) => onUpdate(client.id, 'orcamento_google', parseFloat(e.target.value))}
+                                            className="bg-transparent text-center w-20 border-b border-transparent hover:border-gray-500 focus:border-orange-500 outline-none"
+                                            placeholder="R$ 0,00"
+                                        />
+                                    </div>
+                                </td>}
 
                                 {/* EDITABLE STATUS */}
                                 {visibleColumns.status && <td className="px-6 py-4 text-center">
-                                    {onUpdate ? (
+                                    <div className="relative inline-block">
                                         <select
                                             value={client.status}
                                             onChange={(e) => onUpdate(client.id, 'status', e.target.value)}
-                                            className={`appearance-none px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer outline-none border-none text-center ${currentTheme.inputBg} ${currentTheme.text}
-                            ${client.status === 'ativo' ? 'text-emerald-500' : 'text-gray-400'}
-                          `}
+                                            className={`appearance-none pl-3 pr-8 py-1 rounded-full text-xs font-medium cursor-pointer outline-none border text-center transition-all
+                          ${client.status === 'ativo' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20 hover:bg-gray-500/20'}
+                        `}
                                         >
-                                            <option value="ativo">Ativo</option>
-                                            <option value="inativo">Inativo</option>
-                                            <option value="aguardando">Aguardando</option>
+                                            <option value="ativo" className="bg-gray-900 text-white">Ativo</option>
+                                            <option value="inativo" className="bg-gray-900 text-white">Inativo</option>
+                                            <option value="aguardando" className="bg-gray-900 text-white">Aguardando</option>
                                         </select>
-                                    ) : (
-                                        <Badge variant={client.status === 'ativo' ? 'success' : 'gray'}>{client.status}</Badge>
-                                    )}
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-50">
+                                            <ChevronDown size={12} />
+                                        </div>
+                                    </div>
                                 </td>}
 
                                 {visibleColumns.acoes && <td className="px-6 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => onEdit(client)} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.primaryText} rounded transition-colors`}><Pencil size={16} /></button><button onClick={() => onDelete(client.id, 'clients')} className={`p-1.5 hover:${currentTheme.inputBg} ${currentTheme.danger} rounded transition-colors`}><Trash2 size={16} /></button></div></td>}
@@ -673,8 +728,8 @@ const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
     if (tasks.length === 0) return <div className={`text-center py-12 ${currentTheme.cardBg}/50 rounded-xl border border-dashed ${currentTheme.border}`}><CheckSquare className={`w-12 h-12 ${currentTheme.cardBg} rounded-full p-2 mx-auto mb-3 ${currentTheme.placeholder}`} /><p className={currentTheme.muted}>Nenhuma tarefa pendente.</p></div>;
 
     return (
-        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
-            <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg}`}>
+        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border}`}>
+            <div className={`p-4 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg} rounded-t-xl`}>
                 <h3 className={`font-semibold ${currentTheme.text}`}>Tarefas ({tasks.length})</h3>
                 <div className="relative">
                     <Button variant="outline" size="sm" onClick={() => setShowColumnSelector(!showColumnSelector)} className={`bg-gray-800 ${currentTheme.border} text-gray-300 hover:bg-gray-700`}><Settings size={14} /> Colunas</Button>
@@ -694,9 +749,9 @@ const TaskTable = ({ tasks, onEdit, onDelete, theme }) => {
                     )}
                 </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-b-xl">
                 <table className="w-full text-sm text-left">
-                    <thead className={`${currentTheme.headerBg} ${currentTheme.muted} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
+                    <thead className={`bg-gray-900 ${currentTheme.placeholder} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
                         <tr>
                             {visibleColumns.tarefa && <th className="px-6 py-4">Tarefa</th>}
                             {visibleColumns.cliente && <th className="px-6 py-4">Cliente</th>}
@@ -729,12 +784,12 @@ const TeamView = ({ users, onAdd, onDelete, currentUserId, theme }) => {
     const currentTheme = theme || THEMES.dark;
     if (users.length === 0) return <div className={`text-center py-12 ${currentTheme.muted}`}><p>Sem membros na equipa.</p></div>;
     return (
-        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border} overflow-hidden`}>
-            <div className={`p-4 border-b ${currentTheme.border} ${currentTheme.headerBg} flex justify-between items-center`}>
+        <div className={`${currentTheme.cardBg} rounded-xl shadow-xl border ${currentTheme.border}`}>
+            <div className={`p-4 border-b ${currentTheme.border} ${currentTheme.headerBg} flex justify-between items-center rounded-t-xl`}>
                 <h3 className={`font-semibold ${currentTheme.text}`}>Membros da Equipa ({users.length})</h3>
                 {/* Botão Removido para evitar duplicidade */}
             </div>
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left rounded-b-xl">
                 <thead className={`bg-gray-900 ${currentTheme.placeholder} uppercase text-xs font-bold tracking-wider border-b ${currentTheme.border}`}>
                     <tr><th className="px-6 py-4">Nome</th><th className="px-6 py-4">Email</th><th className="px-6 py-4 text-center">Função</th><th className="px-6 py-4">Permissões</th><th className="px-6 py-4 text-right">Ações</th></tr>
                 </thead>
