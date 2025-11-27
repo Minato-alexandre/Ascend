@@ -26,6 +26,8 @@ const ClientsView = ({ clients, tasks, onAdd, onEdit, onDelete, onUpdate, onOpen
                 onDelete={onDelete}
                 onUpdate={onUpdate}
                 onOpenReport={onOpenReport}
+
+                // Agora repassamos a função correta que veio do App.jsx
                 onAddSubtask={onAddSubtask}
 
                 theme={currentTheme}

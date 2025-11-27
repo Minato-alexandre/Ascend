@@ -1,14 +1,14 @@
 ﻿/* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, User, Pencil, Trash2, RotateCcw, CheckCircle, Globe, Briefcase, Calendar, CheckSquare, Settings, ChevronRight, ChevronDown, MessageSquare, Activity } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { TrendingUp, TrendingDown, User, Pencil, Trash2, RotateCcw, CheckCircle, Globe, Briefcase, Calendar, CheckSquare, Settings, ChevronRight, ChevronDown, MessageSquare, Activity, Thermometer, BarChart2, MessageCircle, Clock, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button, Badge } from './UI';
 import { formatCurrency, safeDate } from '../utils/format';
 import { THEMES } from '../config/themes';
 
-// --- LISTA DE TRANSAÇÕES ---
+// --- LISTA DE TRANSAÇÕES (Mantido) ---
 export const TransactionList = ({ transactions, onEdit, onDelete, onToggleStatus, theme, limit }) => {
     const currentTheme = theme || THEMES.dark;
     const displayList = limit ? transactions.slice(0, limit) : transactions;
@@ -68,12 +68,73 @@ const UserCell = ({ value, onUpdate }) => (
             type="text"
             defaultValue={value}
             onBlur={(e) => onUpdate(e.target.value)}
-            className="bg-transparent border-none focus:ring-0 p-0 text-sm font-medium text-gray-200 w-full placeholder-gray-600"
+            className="bg-transparent border-none focus:ring-0 p-0 text-xs font-medium text-gray-200 w-full placeholder-gray-600"
             placeholder="Atribuir..."
         />
-        <Pencil size={10} className="text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2" />
     </div>
 );
+
+// --- HELPER: QUICK EDIT INPUT (Com Menu Suspenso) ---
+const QuickEditInput = ({ label, icon: Icon, value, onChange, options = [], type = "text" }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [inputValue, setInputValue] = useState(value || "");
+    const dropdownRef = useRef(null);
+
+    useEffect(() => { setInputValue(value || ""); }, [value]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsOpen(false);
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleSelect = (opt) => {
+        setInputValue(opt.value);
+        onChange(opt.value);
+        setIsOpen(false);
+    };
+
+    const handleBlur = () => {
+        setTimeout(() => { if (!isOpen) onChange(inputValue); }, 200);
+    };
+
+    return (
+        <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors group relative" ref={dropdownRef}>
+            <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center gap-1.5">
+                <Icon size={10} className="text-blue-400" /> {label}
+            </label>
+            <div className="relative">
+                <input
+                    type={type}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onBlur={handleBlur}
+                    onFocus={() => options.length > 0 && setIsOpen(true)}
+                    className="bg-transparent border-none w-full text-sm font-semibold text-gray-200 p-0 focus:ring-0 placeholder-gray-700"
+                    placeholder="Definir..."
+                />
+                {options.length > 0 && (
+                    <button onClick={() => setIsOpen(!isOpen)} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-400 p-1">
+                        <ChevronDown size={14} />
+                    </button>
+                )}
+            </div>
+            <AnimatePresence>
+                {isOpen && options.length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute left-0 right-0 top-full mt-2 bg-[#1e1e2e] border border-gray-700 rounded-lg shadow-2xl z-50 max-h-48 overflow-y-auto">
+                        {options.map((opt, i) => (
+                            <button key={i} onClick={() => handleSelect(opt)} className="w-full text-left px-3 py-2 hover:bg-white/5 flex items-center gap-2 text-xs font-medium text-gray-200 transition-colors border-b border-white/5 last:border-0">
+                                <div className={`w-2 h-2 rounded-full ${opt.color}`} /> {opt.value}
+                            </button>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 // --- TABELA DE CLIENTES ---
 export const ClientTable = ({ clients, tasks = [], onEdit, onDelete, onUpdate, onOpenReport, onAddSubtask, theme }) => {
@@ -140,16 +201,11 @@ export const ClientTable = ({ clients, tasks = [], onEdit, onDelete, onUpdate, o
                                             </td>
                                         )}
 
-                                        {visibleColumns.gestor && (
-                                            <td className="px-4 py-4">
-                                                <UserCell value={c.gestor} onUpdate={(val) => onUpdate(c.id, 'gestor', val)} />
-                                            </td>
-                                        )}
+                                        {visibleColumns.gestor && <td className="px-4 py-4"><UserCell value={c.gestor} onUpdate={(val) => onUpdate(c.id, 'gestor', val)} /></td>}
 
                                         <td className="px-4 py-4">
                                             <div className="flex items-center justify-between text-[10px] font-bold uppercase text-gray-400 mb-1.5">
-                                                <span>Progresso</span>
-                                                <span className={progress === 100 ? 'text-emerald-400' : 'text-blue-400'}>{Math.round(progress)}%</span>
+                                                <span>Progresso</span><span className={progress === 100 ? 'text-emerald-400' : 'text-blue-400'}>{Math.round(progress)}%</span>
                                             </div>
                                             <ProgressBar progress={progress} />
                                         </td>
@@ -157,13 +213,8 @@ export const ClientTable = ({ clients, tasks = [], onEdit, onDelete, onUpdate, o
                                         {visibleColumns.status && (
                                             <td className="px-4 py-4 text-center">
                                                 <div className="relative inline-block group">
-                                                    <select
-                                                        value={c.status}
-                                                        onChange={(e) => onUpdate(c.id, 'status', e.target.value)}
-                                                        className={`appearance-none pl-3 pr-8 py-1.5 rounded-full cursor-pointer text-[10px] font-bold uppercase tracking-wider border ${c.status === 'ativo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-gray-700 text-gray-400 border-gray-600'} hover:bg-opacity-20 outline-none transition-all`}
-                                                    >
-                                                        <option value="ativo">Ativo</option>
-                                                        <option value="inativo">Inativo</option>
+                                                    <select value={c.status} onChange={(e) => onUpdate(c.id, 'status', e.target.value)} className={`appearance-none pl-3 pr-8 py-1.5 rounded-full cursor-pointer text-[10px] font-bold uppercase tracking-wider border ${c.status === 'ativo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-gray-700 text-gray-400 border-gray-600'} hover:bg-opacity-20 outline-none transition-all`}>
+                                                        <option value="ativo">Ativo</option><option value="inativo">Inativo</option>
                                                     </select>
                                                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
                                                 </div>
@@ -173,78 +224,84 @@ export const ClientTable = ({ clients, tasks = [], onEdit, onDelete, onUpdate, o
                                         {visibleColumns.acoes && (
                                             <td className="px-4 py-4 text-right">
                                                 <div className="flex justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => onEdit(c)} className={`p-2 hover:bg-blue-500/10 hover:text-blue-400 rounded-lg transition-colors`} title="Editar">
-                                                        <Pencil size={16} />
-                                                    </button>
-                                                    <button onClick={() => onDelete(c.id, 'clients')} className={`p-2 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors`} title="Excluir">
-                                                        <Trash2 size={16} />
-                                                    </button>
+                                                    <button onClick={() => onEdit(c)} className={`p-2 hover:bg-blue-500/10 hover:text-blue-400 rounded-lg transition-colors`}><Pencil size={16} /></button>
+                                                    <button onClick={() => onDelete(c.id, 'clients')} className={`p-2 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors`}><Trash2 size={16} /></button>
                                                 </div>
                                             </td>
                                         )}
                                     </tr>
 
-                                    {/* LINHAS DE SUBTAREFAS (EXPANSÃO) */}
                                     {isExpanded && (
                                         <tr className="bg-black/20 shadow-inner border-t border-white/5">
                                             <td colSpan={Object.keys(visibleColumns).length + 2} className="p-0">
-                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="pl-12 pr-4 py-4 bg-gradient-to-b from-black/20 to-transparent">
-                                                    <div className="border-l-2 border-gray-700 pl-4">
-                                                        <table className="w-full">
-                                                            <tbody className="divide-y divide-white/5">
-                                                                {/* Botão Adicionar Subelemento */}
-                                                                <tr>
-                                                                    <td colSpan="4" className="p-2 pl-4">
-                                                                        <button
-                                                                            // AQUI ESTÁ O FIX: Garante que chamamos a função correta com o objeto do cliente
-                                                                            onClick={() => onAddSubtask && onAddSubtask(c)}
-                                                                            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium px-2 py-1 rounded hover:bg-blue-500/10 transition-colors"
-                                                                        >
-                                                                            + Adicionar subelemento
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
+                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="pl-12 pr-4 py-6 bg-gradient-to-b from-black/20 to-transparent">
 
-                                                                {clientTasks.length === 0 && (
-                                                                    <tr><td colSpan="4" className="p-4 text-center text-xs text-gray-500 italic">Sem tarefas vinculadas.</td></tr>
-                                                                )}
+                                                    {/* CAIXA DE ETIQUETAS (CORRIGIDO: REMOVIDO OVERFLOW-HIDDEN) */}
+                                                    <div className="mb-6 bg-[#0F1115] rounded-xl border border-gray-800 p-4 shadow-inner grid grid-cols-4 gap-4 relative">
+                                                        {/* Efeito visual de "Caixa dentro da Caixa" com cantos arredondados para não vazar */}
+                                                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-600 rounded-l-xl"></div>
 
-                                                                {clientTasks.map(task => (
-                                                                    <tr key={task.id} className="hover:bg-white/5 group transition-colors">
-                                                                        <td className="py-3 pl-2 w-1/2">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className={`w-2 h-2 rounded-full ${task.status === 'concluida' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-gray-600'}`} />
-                                                                                <span className={`text-sm font-medium ${task.status === 'concluida' ? 'line-through text-gray-500' : 'text-gray-300'}`}>{task.titulo}</span>
+                                                        <QuickEditInput label="Temperatura" icon={Thermometer} value={c.temperatura} onChange={(val) => onUpdate(c.id, 'temperatura', val)} options={[{ value: "Fluindo Bem", color: "bg-green-500" }, { value: "Encaixando", color: "bg-teal-500" }, { value: "Iniciando Projeto", color: "bg-pink-500" }, { value: "Precisa de Novas Estratégias", color: "bg-purple-500" }, { value: "Acompanhar", color: "bg-blue-500" }]} />
+                                                        <QuickEditInput label="Otimização" icon={BarChart2} value={c.otimizacao} onChange={(val) => onUpdate(c.id, 'otimizacao', val)} options={[{ value: "Otimizada", color: "bg-emerald-500" }, { value: "Mensurar", color: "bg-rose-500" }, { value: "Parado", color: "bg-gray-500" }]} />
+                                                        <QuickEditInput label="Data Otimização" icon={Clock} type="date" value={c.data_otimizacao} onChange={(val) => onUpdate(c.id, 'data_otimizacao', val)} />
+                                                        <QuickEditInput label="Feedback" icon={MessageCircle} value={c.feedback} onChange={(val) => onUpdate(c.id, 'feedback', val)} options={[{ value: "Enviado WhatsApp", color: "bg-green-600" }, { value: "Planilha/Dash", color: "bg-orange-500" }, { value: "A fazer", color: "bg-gray-500" }, { value: "Feito", color: "bg-purple-500" }, { value: "Não Rodou", color: "bg-red-600" }]} />
+                                                    </div>
+
+                                                    {/* LISTA DE TAREFAS COMO CAIXAS/CARDS */}
+                                                    <div className="border-l-2 border-gray-700 pl-4 ml-2">
+                                                        {/* CABEÇALHO DAS TAREFAS */}
+                                                        <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 px-3">
+                                                            <div className="flex-1">Tarefa / Subelemento</div>
+                                                            <div className="px-4 w-32">Responsável</div>
+                                                            <div className="px-4 w-24 text-center">Status</div>
+                                                            <div className="w-6"></div>
+                                                        </div>
+
+                                                        <div className="space-y-1">
+                                                            {clientTasks.length === 0 && (
+                                                                <div className="p-4 text-center text-xs text-gray-500 italic border border-dashed border-gray-700 rounded-lg">Sem tarefas.</div>
+                                                            )}
+
+                                                            {clientTasks.map(task => (
+                                                                <div
+                                                                    key={task.id}
+                                                                    onClick={() => onOpenReport(task)}
+                                                                    className="group flex items-center justify-between bg-gray-800/40 hover:bg-gray-800 border border-gray-700/50 hover:border-blue-500/30 p-3 rounded-lg cursor-pointer transition-all shadow-sm hover:shadow-md"
+                                                                >
+                                                                    <div className="flex items-center gap-3 flex-1">
+                                                                        <div className={`w-2 h-2 rounded-full ${task.status === 'concluida' ? 'bg-emerald-500' : task.relatorio ? 'bg-blue-500' : 'bg-gray-500'}`} />
+                                                                        <div className="flex flex-col">
+                                                                            <span className={`text-sm font-medium ${task.status === 'concluida' ? 'line-through text-gray-500' : 'text-gray-200'}`}>{task.titulo}</span>
+                                                                            {task.relatorio && <div className="flex items-center gap-1 text-[10px] text-blue-400 mt-0.5"><FileText size={10} /> Possui atualizações</div>}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="px-4 w-32">
+                                                                        {task.assinatura ? (
+                                                                            <div className="flex items-center gap-1.5 bg-black/20 px-2 py-1 rounded text-[10px] text-gray-400 border border-white/5 w-fit">
+                                                                                <User size={10} /> <span className="truncate max-w-[80px]">{task.assinatura}</span>
                                                                             </div>
-                                                                        </td>
+                                                                        ) : <span className="text-gray-600 text-[10px]">-</span>}
+                                                                    </div>
 
-                                                                        <td className="px-4 py-3">
-                                                                            <div className="flex items-center gap-2" title={task.assinatura || "Sem dono"}>
-                                                                                <div className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-[10px] border border-gray-700 text-gray-400">
-                                                                                    {task.assinatura?.[0] || <User size={12} />}
-                                                                                </div>
-                                                                                {task.assinatura && <span className="text-xs text-gray-500">{task.assinatura}</span>}
-                                                                            </div>
-                                                                        </td>
+                                                                    <div className="px-4 w-24 text-center">
+                                                                        <Badge variant={task.status === 'concluida' ? 'success' : 'gray'} className="text-[10px] px-2 py-0.5 uppercase tracking-wider">{task.status.replace('_', ' ')}</Badge>
+                                                                    </div>
 
-                                                                        <td className="px-4 py-3 text-center">
-                                                                            <Badge variant={task.status === 'concluida' ? 'success' : 'gray'} className="text-[10px] px-2 py-0.5 uppercase tracking-wider">{task.status.replace('_', ' ')}</Badge>
-                                                                        </td>
+                                                                    <div className="w-6 text-right">
+                                                                        <ChevronRight size={14} className="text-gray-600 group-hover:text-blue-400 transition-colors" />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
 
-                                                                        <td className="px-4 py-3 text-right">
-                                                                            <button
-                                                                                onClick={() => onOpenReport(task)}
-                                                                                className={`relative p-2 rounded-full transition-all ${task.relatorio ? 'text-blue-400 bg-blue-500/10' : 'text-gray-500 hover:text-blue-400 hover:bg-white/5'}`}
-                                                                                title="Relatório / Updates"
-                                                                            >
-                                                                                <MessageSquare size={16} />
-                                                                                {task.relatorio && <span className="absolute top-0 right-0 flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span></span>}
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
+                                                        {/* Botão Adicionar Nova Tarefa (EMBAIXO) */}
+                                                        <button
+                                                            onClick={() => onAddSubtask && onAddSubtask(c)}
+                                                            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-2 font-medium px-4 py-3 rounded-lg hover:bg-blue-500/10 transition-all w-full border border-dashed border-blue-500/30 hover:border-blue-500/50 mt-3 justify-center"
+                                                        >
+                                                            + Adicionar nova tarefa
+                                                        </button>
                                                     </div>
                                                 </motion.div>
                                             </td>
