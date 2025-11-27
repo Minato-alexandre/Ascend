@@ -1,4 +1,4 @@
-import React from 'react';
+ï»¿import React from 'react';
 import { Plus, Calendar, CheckSquare, AlertTriangle, DollarSign, FileSignature, Clock, Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { motion } from "framer-motion";
 import { format } from 'date-fns';
@@ -13,17 +13,17 @@ const TasksView = ({ tasks, onAdd, onEdit, onDelete, theme }) => {
 
     // Helper para badges de status/prioridade
     const getStatusBadge = (status, prioridade) => {
-        if (status === 'concluida') return <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-bold uppercase flex items-center gap-1"><CheckSquare size={12} /> Concluída</span>;
+        if (status === 'concluida') return <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-md text-xs font-bold uppercase flex items-center gap-1"><CheckSquare size={12} /> ConcluÃ­da</span>;
         if (prioridade === 'alta' || prioridade === 'urgente') return <span className="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/20 rounded-md text-xs font-bold uppercase flex items-center gap-1"><AlertTriangle size={12} /> Urgente</span>;
         return <span className="px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-md text-xs font-bold uppercase flex items-center gap-1"><Clock size={12} /> Em Andamento</span>;
     };
 
     return (
         <div className="space-y-8 max-w-full mx-auto">
-            {/* Cabeçalho */}
+            {/* CabeÃ§alho */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-black text-white tracking-tight mb-2">Gestão de Tarefas</h1>
+                    <h1 className="text-4xl font-black text-white tracking-tight mb-2">GestÃ£o de Tarefas</h1>
                     <p className="text-gray-400">Acompanhe entregas, contratos e prazos.</p>
                 </div>
                 <button
@@ -46,7 +46,7 @@ const TasksView = ({ tasks, onAdd, onEdit, onDelete, theme }) => {
                                 <th className="p-6">Data Entrega</th>
                                 <th className="p-6">Assinado Por</th>
                                 <th className="p-6 text-center">Status</th>
-                                <th className="p-6 text-right">Ações</th>
+                                <th className="p-6 text-right">AÃ§Ãµes</th>
                             </tr>
                         </thead>
                         <tbody className="text-sm text-gray-300 divide-y divide-white/5">
@@ -102,7 +102,7 @@ const TasksView = ({ tasks, onAdd, onEdit, onDelete, theme }) => {
                                         {getStatusBadge(t.status, t.prioridade)}
                                     </td>
 
-                                    {/* Ações */}
+                                    {/* AÃ§Ãµes */}
                                     <td className="p-6 text-right">
                                         <div className="flex justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                                             <button onClick={() => onEdit(t)} className="p-2 hover:bg-blue-500/10 text-gray-400 hover:text-blue-400 rounded-lg transition-colors">

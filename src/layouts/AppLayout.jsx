@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+Ôªøimport React, { useState, useEffect, useMemo } from 'react';
 import {
-    LayoutDashboard, Users, ListTodo, LogOut, DollarSign,
+    LayoutDashboard, Users, LogOut, DollarSign,
     Shield, Settings, Bell, AlertCircle, Flame
 } from 'lucide-react';
 import { Button } from '../components/UI';
@@ -9,33 +9,28 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
     const [showNotifications, setShowNotifications] = useState(false);
 
     const navItems = useMemo(() => {
-        // USANDO C”DIGOS UNICODE PARA EVITAR ERROS DE CODIFICA«√O
-        // \u00E3 = „
-        // \u00F5 = ı
-        // \u00E7 = Á
-        // \u00E9 = È
+        // LISTA DE ABAS (Tarefas removida daqui)
         const items = [
-            { id: 'dashboard', label: 'Vis\u00E3o Geral', icon: LayoutDashboard, permission: 'dashboard' },
+            { id: 'dashboard', label: 'Vis√£o Geral', icon: LayoutDashboard, permission: 'dashboard' },
             { id: 'transactions', label: 'Financeiro', icon: DollarSign, permission: 'financeiro' },
             { id: 'clients', label: 'Clientes', icon: Users, permission: 'clientes' },
-            { id: 'tasks', label: 'Tarefas', icon: ListTodo, permission: 'tarefas' },
+            // A aba tarefas foi removida pois agora √© interna dos clientes
         ];
 
         if (userData?.role === 'admin' || userData?.role === 'dev') {
-            items.push({ id: 'team', label: 'Gest\u00E3o de Equipa', icon: Shield, permission: 'admin' });
-            items.push({ id: 'settings', label: 'Configura\u00E7\u00F5es', icon: Settings, permission: 'admin' });
-            return items;
+            items.push({ id: 'team', label: 'Gest√£o de Equipa', icon: Shield, permission: 'admin' });
+            items.push({ id: 'settings', label: 'Configura√ß√µes', icon: Settings, permission: 'admin' });
         }
 
+        if (userData?.role === 'admin' || userData?.role === 'dev') return items;
+
         const permissions = userData?.permissions || {};
-        return items.filter(item => item.id === 'dashboard' || permissions[item.permission]===true);
+        return items.filter(item => item.id === 'dashboard' || permissions[item.permission] === true);
     }, [userData]);
 
     useEffect(() => {
-        // TÌtulo da aba do navegador tambÈm corrigido
-        const currentLabel = navItems.find(item => item.id === activeTab)?.label || 'Gest\u00E3o';
+        const currentLabel = navItems.find(item => item.id === activeTab)?.label || 'Gest√£o';
         document.title = `Ascend | ${currentLabel}`;
-
     }, [activeTab, navItems]);
 
     return (
@@ -91,10 +86,10 @@ const AppLayout = ({ children, activeTab, setActiveTab, user, userData, onLogout
                         </button>
                         {showNotifications && (
                             <div className={`absolute right-0 mt-2 w-80 ${currentTheme.cardBg} rounded-xl shadow-2xl border ${currentTheme.border} z-50 overflow-hidden`}>
-                                <div className={`p-3 border-b ${currentTheme.border} ${currentTheme.headerBg} font-medium text-sm ${currentTheme.text.replace('text-white', 'text-gray-300')}`}>Notifica{'\u00E7'}{'\u00F5'}es</div>
+                                <div className={`p-3 border-b ${currentTheme.border} ${currentTheme.headerBg} font-medium text-sm ${currentTheme.text.replace('text-white', 'text-gray-300')}`}>Notifica√ß√µes</div>
                                 <div className="max-h-64 overflow-y-auto">
                                     {notifications.length === 0 ? (
-                                        <div className={`p-4 text-center ${currentTheme.muted} text-sm`}>Sem notifica{'\u00E7'}{'\u00F5'}es novas.</div>
+                                        <div className={`p-4 text-center ${currentTheme.muted} text-sm`}>Sem notifica√ß√µes novas.</div>
                                     ) : (
                                         notifications.map((note, idx) => (
                                             <div key={idx} className={`p-3 border-b ${currentTheme.border} hover:${currentTheme.inputBg} last:border-0 transition-colors`}>

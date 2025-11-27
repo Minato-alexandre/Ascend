@@ -1,10 +1,10 @@
-/* eslint-disable no-unused-vars */
+ï»¿/* eslint-disable no-unused-vars */
 import React from 'react';
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Loader2 } from 'lucide-react';
 import { THEMES } from '../config/themes';
 
-// --- Botão Padrão ---
+// --- BotÃ£o PadrÃ£o ---
 export const Button = ({ children, onClick, className = "", variant, disabled, type = "button", theme, ...props }) => {
     const currentTheme = theme || THEMES.dark;
     return (
@@ -13,9 +13,9 @@ export const Button = ({ children, onClick, className = "", variant, disabled, t
             onClick={onClick}
             disabled={disabled}
             className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${variant === 'ghost' ? `hover:${currentTheme.inputBg} ${currentTheme.muted} hover:${currentTheme.text}` :
-                    variant === 'destructive' ? 'bg-red-600 text-white hover:bg-red-700' :
-                        variant === 'outline' ? `border ${currentTheme.border} ${currentTheme.text} hover:${currentTheme.inputBg} hover:${currentTheme.text}` :
-                            `${currentTheme.primary} text-white hover:opacity-90 shadow-lg ${currentTheme.animationColor}`
+                variant === 'destructive' ? 'bg-red-600 text-white hover:bg-red-700' :
+                    variant === 'outline' ? `border ${currentTheme.border} ${currentTheme.text} hover:${currentTheme.inputBg} hover:${currentTheme.text}` :
+                        `${currentTheme.primary} text-white hover:opacity-90 shadow-lg ${currentTheme.animationColor}`
                 } ${className}`}
             {...props}
         >
@@ -56,7 +56,7 @@ export const Select = ({ children, value, onChange, name, className = "", theme 
     );
 };
 
-// --- Card (Cartão) ---
+// --- Card (CartÃ£o) ---
 export const Card = ({ children, className = "", theme }) => {
     const currentTheme = theme || THEMES.dark;
     return <div className={`${currentTheme.cardBg} rounded-xl shadow-md border ${currentTheme.border} overflow-hidden ${className}`}>{children}</div>;
@@ -95,6 +95,46 @@ export const Dialog = ({ open, onClose, children, theme }) => {
                         {children}
                     </motion.div>
                 </div>
+            )}
+        </AnimatePresence>
+    );
+};
+
+// --- Drawer (Painel Lateral) ---
+export const Drawer = ({ open, onClose, title, children, theme }) => {
+    const currentTheme = theme || THEMES.dark;
+
+    return (
+        <AnimatePresence>
+            {open && (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-black/60 z-[100] backdrop-blur-sm"
+                    />
+
+                    <motion.div
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className={`fixed top-0 right-0 h-full w-full md:w-[600px] ${currentTheme.cardBg} border-l ${currentTheme.border} shadow-2xl z-[101] flex flex-col`}
+                    >
+                        <div className={`p-6 border-b ${currentTheme.border} flex justify-between items-center ${currentTheme.headerBg}`}>
+                            <h2 className={`text-xl font-bold ${currentTheme.text}`}>{title}</h2>
+                            <button onClick={onClose} className={`p-2 rounded-full hover:${currentTheme.inputBg} ${currentTheme.muted} transition-colors`}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {children}
+                        </div>
+                    </motion.div>
+                </>
             )}
         </AnimatePresence>
     );
