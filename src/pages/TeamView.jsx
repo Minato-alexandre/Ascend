@@ -8,22 +8,22 @@ const GLASS_CARD = "bg-gray-900/60 backdrop-blur-xl border border-white/10 round
 const TeamView = ({ users, onAdd, onEdit, onDelete, currentUserId, userRole, theme }) => {
     const currentTheme = theme || THEMES.dark;
 
-    // LÓGICA DE FILTRAGEM E SEGURANÇA
+    // --- 1. DEFINIÇÃO DA VARIÁVEL canManage (O erro estava aqui) ---
+    const canManage = userRole === 'admin' || userRole === 'dev';
+
+    // --- 2. LÓGICA DE FILTRAGEM ---
     const filteredUsers = users.filter(u => {
-        // 1. Se quem está olhando é 'dev', vê tudo.
+        // Se quem está olhando é 'dev', vê tudo.
         if (userRole === 'dev') return true;
 
-        // 2. Se quem está olhando é 'admin', NÃO vê 'dev'.
+        // Se quem está olhando é 'admin', NÃO vê 'dev'.
         if (userRole === 'admin' && u.role === 'dev') return false;
 
-        // 3. Gestor vê os outros (mas não edita, tratado abaixo), ou ocultar devs também
+        // Gestor vê os outros (mas não edita), ou ocultar devs também
         if (u.role === 'dev') return false;
 
         return true;
     });
-
-    // Verifica se tem permissão de escrita (Só Admin e Dev podem editar/excluir)
-    const canManage = userRole === 'admin' || userRole === 'dev';
 
     const getRoleStyle = (role) => {
         switch (role) {
@@ -37,8 +37,8 @@ const TeamView = ({ users, onAdd, onEdit, onDelete, currentUserId, userRole, the
         <div className="space-y-8 max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-black text-white tracking-tight mb-2">Gest{'\u00E3'}o de Equipa</h1>
-                    <p className="text-gray-400">Gerencie permiss{'\u00F5'}es e acesso ao sistema.</p>
+                    <h1 className={`text-4xl font-black ${currentTheme.text} tracking-tight mb-2`}>Gestão de Equipa</h1>
+                    <p className={currentTheme.muted}>Gerencie permissões e acesso ao sistema.</p>
                 </div>
 
                 {/* Botão Novo Membro: Só aparece se tiver permissão */}
@@ -56,16 +56,16 @@ const TeamView = ({ users, onAdd, onEdit, onDelete, currentUserId, userRole, the
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-white/10 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <tr className={`border-b border-white/10 text-xs font-bold ${currentTheme.muted} uppercase tracking-wider`}>
                                 <th className="p-6">Colaborador</th>
                                 <th className="p-6">Email (Login)</th>
-                                <th className="p-6 text-center">Fun{'\u00E7'}{'\u00E3'}o</th>
-                                <th className="p-6 text-center">Permiss{'\u00F5'}es</th>
+                                <th className="p-6 text-center">Função</th>
+                                <th className="p-6 text-center">Permissões</th>
                                 {/* Coluna Ações só aparece para quem pode gerenciar */}
-                                {canManage && <th className="p-6 text-right">A{'\u00E7'}{'\u00F5'}es</th>}
+                                {canManage && <th className="p-6 text-right">Ações</th>}
                             </tr>
                         </thead>
-                        <tbody className="text-sm text-gray-300 divide-y divide-white/5">
+                        <tbody className={`text-sm ${currentTheme.text} divide-y divide-white/5`}>
                             {filteredUsers.map((u, index) => {
                                 const style = getRoleStyle(u.role);
                                 const RoleIcon = style.icon;
@@ -79,14 +79,14 @@ const TeamView = ({ users, onAdd, onEdit, onDelete, currentUserId, userRole, the
                                         transition={{ delay: index * 0.1 }}
                                         className="hover:bg-white/5 transition-colors"
                                     >
-                                        <td className="p-6 font-bold text-white flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border border-white/10 shadow-inner text-lg">
+                                        <td className={`p-6 font-bold ${currentTheme.text} flex items-center gap-3`}>
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border border-white/10 shadow-inner text-lg text-white">
                                                 {u.name?.[0]?.toUpperCase() || <User size={18} />}
                                             </div>
                                             {u.name}
-                                            {isMe && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">Voc{'\u00EA'}</span>}
+                                            {isMe && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">Você</span>}
                                         </td>
-                                        <td className="p-6"><div className="flex items-center gap-2 text-gray-400"><Mail size={14} /> {u.email}</div></td>
+                                        <td className="p-6"><div className={`flex items-center gap-2 ${currentTheme.muted}`}><Mail size={14} /> {u.email}</div></td>
                                         <td className="p-6 text-center">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${style.color}`}>
                                                 <RoleIcon size={14} /> {style.label}

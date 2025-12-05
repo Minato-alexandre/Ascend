@@ -1,9 +1,8 @@
-import { initializeApp } from 'firebase/app';
+Ôªøimport { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-    // ... suas chaves aqui ...
     apiKey: "AIzaSyBfD2ebBay_Aqvf4NKQ5kP01yTbBe9fq_Q",
     authDomain: "financechart-41c8d.firebaseapp.com",
     projectId: "financechart-41c8d",
@@ -18,6 +17,6 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// --- CORRE«√O AQUI ---
+// --- CORRE√á√ÉO AQUI ---
 // Mude de "APP_COLLECTION" para "appId"
 export const appId = "ascend-prod";

@@ -1,4 +1,14 @@
-import { isBefore, startOfDay } from 'date-fns';
+ï»¿import {
+    isBefore,
+    startOfDay,
+    endOfDay,
+    startOfMonth,
+    endOfMonth,
+    startOfYear,
+    endOfYear,
+    subDays,
+    isWithinInterval
+} from 'date-fns';
 
 export const formatCurrency = (value) => {
     if (value === undefined || value === null || isNaN(value)) return "R$ 0,00";
@@ -26,12 +36,12 @@ export const checkIsOverdue = (dateString) => {
     return isBefore(safeDate(dateString), startOfDay(new Date()));
 };
 
-// --- MÁSCARA CORRIGIDA COM LIMITE RÍGIDO ---
+// --- MÃSCARA CORRIGIDA COM LIMITE RÃGIDO ---
 export const formatCurrencyInput = (value) => {
-    // 1. Remove tudo que não é número
+    // 1. Remove tudo que nÃ£o Ã© nÃºmero
     let v = value.replace(/\D/g, "");
 
-    // 2. TRAVA DE SEGURANÇA (14 dígitos = 999 Bilhões e 99 centavos)
+    // 2. TRAVA DE SEGURANÃ‡A (14 dÃ­gitos = 999 BilhÃµes e 99 centavos)
     if (v.length > 14) {
         v = v.slice(0, 14);
     }
@@ -39,13 +49,13 @@ export const formatCurrencyInput = (value) => {
     // 3. Se estiver vazio
     if (!v) return "";
 
-    // 4. Matemática dos centavos
+    // 4. MatemÃ¡tica dos centavos
     v = (Number(v) / 100).toFixed(2) + "";
 
-    // 5. Formatação Brasileira (RegEx)
+    // 5. FormataÃ§Ã£o Brasileira (RegEx)
     v = v.replace(".", ",");
-    v = v.replace(/(\d)(\d{3})(\d{3})(\d{3}),/g, "$1.$2.$3.$4,"); // Bilhão
-    v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,"); // Milhão
+    v = v.replace(/(\d)(\d{3})(\d{3})(\d{3}),/g, "$1.$2.$3.$4,"); // BilhÃ£o
+    v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,"); // MilhÃ£o
     v = v.replace(/(\d)(\d{3}),/g, "$1.$2,"); // Milhar
 
     return `R$ ${v}`;
@@ -56,4 +66,38 @@ export const parseCurrencyInput = (value) => {
     if (!value) return 0;
     const cleanValue = value.replace("R$", "").replace(/\./g, "").replace(",", ".");
     return parseFloat(cleanValue);
+};
+
+export const getDateRanges = () => {
+    const today = new Date();
+    return {
+        thisMonth: {
+            start: startOfMonth(today),
+            end: endOfMonth(today),
+            label: 'MÃªs Atual'
+        },
+        thisYear: {
+            start: startOfYear(today),
+            end: endOfYear(today),
+            label: 'Ano Atual'
+        },
+        last30Days: {
+            start: subDays(today, 30),
+            end: today,
+            label: 'Ãšltimos 30 dias'
+        }
+    };
+};
+
+export const filterByDateRange = (items, startDate, endDate, dateField = 'data') => {
+    if (!startDate || !endDate) return items;
+
+    // safeDate Ã© uma funÃ§Ã£o que jÃ¡ existia no seu cÃ³digo, certifique-se de que ela estÃ¡ acessÃ­vel aqui
+    const start = startOfDay(safeDate(startDate));
+    const end = endOfDay(safeDate(endDate));
+
+    return items.filter(item => {
+        const itemDate = safeDate(item[dateField]);
+        return isWithinInterval(itemDate, { start, end });
+    });
 };
